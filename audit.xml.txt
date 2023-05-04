@@ -1,0 +1,108 @@
+Label	Namespace	Name
+customGDPR	gg	customGDPR
+gg GDPR RT	gg	ggGDPR_RT
+ggMigration 1 - Schemas	gg	ggMigration1
+ggMigration 2 - Forms	gg	ggMigration2
+ggMigration 3 - JS	gg	ggMigration3
+ggMigration 4 - Typologies	gg	ggMigration4
+ggMigration 5 - Folders and Operators	gg	ggMigration5
+ggMigration 6 - Enums + Options + Counters	gg	ggMigration6
+ggMigration 7 - Import Workflows	gg	ggMigration7
+ggMigration 8 - WebApps	gg	ggMigration8
+ggMigration 8 - WebApps 2	gg	ggMigration82
+ggMigration 9 - Perso Blocks	gg	ggMigration9
+ggMigration - Campaigns 1	gg	ggMigrationCampaigns1
+ggMigration - Campaigns 2	gg	ggMigrationCampaigns2
+ggMigration - Campaigns 3	gg	ggMigrationCampaigns3
+ggMigration - Campaigns 4	gg	ggMigrationCampaigns4
+ggMigration - Campaigns 5	gg	ggMigrationCampaigns5
+ggMigration - Campaigns 6	gg	ggMigrationCampaigns6
+ggMigration - Campaigns 7	gg	ggMigrationCampaigns7
+ggMigration - MC Templates	gg	ggMigrationMcTemplates
+ggMigration - Resources	gg	ggMigrationResources
+ggMigration - Templates 2	gg	ggMigrationTemplates2
+ggMigration - Workflows 1	gg	ggMigrationWorkflows1
+ggMigration - Workflows 2	gg	ggMigrationWorkflows2
+ggMigration - Workflows 3	gg	ggMigrationWorkflows3
+ggMigration - Workflows 4	gg	ggMigrationWorkflows4
+Handset Campaign Schemas	gg	HandsetSchemas
+MC Custom Web Service	gg	mcCustomWebService
+OBS074 - test propflex	gg	OBS074
+Phone Campaign Schemas	gg	PhoneSchemas
+CMS EECC	gg	PKG100
+namespaceentries	gg	PKG104
+Claiming Email Schemas	gg	PKG106
+Claiming Email Campaigns And Templates	gg	PKG107
+Claiming Email Banners	gg	PKG108
+OBC1053 Webapp	gg	PKG110
+OBC732	gg	PKG112
+billingRefund Workflows	gg	PKG114
+billingRefund Deliveries	gg	PKG116
+mitchOp	gg	PKG117
+OBC1086 - New Phone Survey	gg	PKG147
+OBS015 - EECC	gg	PKG148
+New EECC Template	gg	PKG149
+InboundSMSTemp	gg	PKG150
+INBTest	gg	PKG151
+OBS005 - Single Lead	gg	PKG152
+OBS005 - Splits	gg	PKG153
+EECC CMT Content	gg	PKG154
+OBS009 - Splits AJ	gg	PKG1544
+DM1701901	gg	PKG155
+MGMPromo1	gg	PKG156
+DM1701902	gg	PKG1568
+DM1701970	gg	PKG157
+DM1701971	gg	PKG158
+DM1701976	gg	PKG159
+DM1701972	gg	PKG160
+DM1701973	gg	PKG161
+DM1701913	gg	PKG162
+DM1701914	gg	PKG163
+DM1701911	gg	PKG164
+DM1701909	gg	PKG165
+DM1701966	gg	PKG166
+OBC094-EECC	gg	PKG167
+RTBF_PACKAGE	gg	PKG168
+Change templates to EECC	gg	PKG169
+OBC047 Conversion	gg	PKG170
+PKG171	gg	PKG171
+Javascript for EECC Template	gg	PKG172
+EECC Personalisation	gg	PKG173
+ggMGMPromoWebappTemplates	gg	PKG174
+OBS062 Stage	gg	PKG175
+Welcome -10th October	gg	PKG176
+Usage Statement 1 - Propflex	gg	PKG177
+Golden goodybag Statement - propflex	gg	PKG178
+propflex OBS037	gg	PKG179
+Goodybag terms and conditions - nov 2022	gg	PKG180
+OBS047 - Propflex	gg	PKG181
+OBS053 - Propflex	gg	PKG182
+OBS054 - Propflex	gg	PKG183
+OBS062 - Propflex	gg	PKG184
+OBS063 - Propflex	gg	PKG185
+OBS005 - propflex	gg	PKG186
+OBS005 - Single Propflex	gg	PKG187
+OBS005 - PID <4 propflex	gg	PKG188
+0bs009 - propflex	gg	PKG189
+0bs009 propflex	gg	PKG190
+OBC904 - Change Template Type	gg	PKG193
+WJ3 - 28 - obc094	gg	PKG194
+OBC094 - convert to propflex	gg	PKG195
+OBC094 - New Package	gg	PKG196
+OBc094 - Day 7 service	gg	PKG197
+OBC094 - Day 7 - Marketing	gg	PKG198
+OBC094 - Day 14 - Service	gg	PKG199
+ggMigration 5 - Folders	gg	PKG67
+OBC1075	gg	PKG83
+MGM_Activation_OBS pkg	gg	PKG84
+redshift	gg	PKG86
+OBC1079	gg	PKG88
+MGM Sept Templates	gg	PKG89
+Roaming Templates	gg	PKG91
+OBC146 - DEM	gg	PKG94
+OBS026a CMS Revamp	gg	PKG95
+Student WJ	gg	PKG96
+GDPR Webapp	gg	PKG97
+New Handset campaign build	gg	PKG99
+TAP Audit Module	gg	TapAuditModuleDynamicCodes
+TAP : Audit Alerts v3.1	tap	auditAlertsV3
