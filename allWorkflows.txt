@@ -1,0 +1,209 @@
+<query-collection>
+  <query _cs=" ()" background="xtk:backgrounds/neolane.png" errorActivity="js" errorCount="0" eventCount="236" id="1227406333" modelName="newWorkflow" queryRestart="false" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient" simulation="false" taskCount="273">
+    <activities>
+      <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start" onError="0" runOnSimulation="true" timezone="_inherit_" x="16" y="80">
+        <transitions>
+          <initial enabled="true" name="initial" target="query" x="0" y="0"/>
+        </transitions>
+      </start>
+      <js collision="0" img="xtk:activities/script.png" label="JavaScript code" mask="0" name="js" onError="0" timezone="_inherit_" x="384" y="80">
+        <transitions>
+          <done enabled="true" label="Ok" name="done"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <script>loadLibrary("xtk:common.js");
+    loadLibrary("xtk:shared/json2.js");
+   
+    
+    
+    
+  
+    
+    function getBranches(){
+  
+
+
+         var req = new HttpClientRequest('https://api.github.com/repos/chaunceyTAP/test3/git/refs/heads/main');
+  
+          req.method = 'GET';
+      
+          req.header["User-Agent"] = "chaunceyTAP";
+          req.header["Accept"] = "application/vnd.github+json";
+          req.header["Content-Type"] = "application/json";
+          req.header["X-GitHub-Api-Version"] = "2022-11-28";
+          req.header["X-OAuth-Scopes"] = "repo, user";
+          req.header["X-Accepted-OAuth-Scopes"] = "repo";
+          req.header["Authorization"] = "Bearer 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";
+          
+          req.execute();
+          
+          var response = req.response;
+       
+          var body = response.body; 
+          var bodyAsJson = JSON.parse(body);
+         
+          
+          var baseTreeSha = bodyAsJson.object.sha
+       
+  
+      function viewCommit(baseTreeSha){
+        
+            var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/commits/' + baseTreeSha
+            var req = new HttpClientRequest(URL);
+            
+            req.method = 'GET';
+            
+            req.header["User-Agent"] = "chaunceyTAP";
+            req.header["Accept"] = "application/vnd.github+json";
+            req.header["Content-Type"] = "application/json";
+            req.header["X-GitHub-Api-Version"] = "2022-11-28";
+            req.header["X-OAuth-Scopes"] = "repo, user";
+            req.header["X-Accepted-OAuth-Scopes"] = "repo";
+            req.header["Authorization"] = "Bearer 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";
+            
+            req.execute();
+            
+            var response = req.response;
+          
+            var body = response.body; 
+            var bodyAsJson = JSON.parse(body);
+            
+            var treeSha = bodyAsJson.tree.sha;
+            
+            //document.write(treeSha);
+            
+            function createTree(baseTreeSha, treeSha){
+            
+                                function getData(){
+                                  var query = xtk.queryDef.create(
+                                    &lt;queryDef schema="temp:query" operation="select"&gt;
+                                      &lt;select&gt;
+                                        &lt;node expr="@id" /&gt;
+                                        &lt;node expr="data" /&gt;
+                                      &lt;/select&gt;
+                                    &lt;/queryDef&gt;
+                                    );
+                                    var result = query.ExecuteQuery();
+                                    var newResult = result.toXMLString()
+                                    //document.write('this is the new result :   ' + result);
+                                    //logInfo('this is the new result :   ' + result.toXMLString());
+                                    return newResult;
+                                }
+                                                    
+                                
+              var newResult = getData();
+              var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/trees'
+              var req = new HttpClientRequest(URL);
+              
+              req.method = 'POST';
+              
+              req.header["User-Agent"] = "chaunceyTAP";
+              req.header["Accept"] = "application/vnd.github+json";
+              req.header["Content-Type"] = "application/json";
+              req.header["X-GitHub-Api-Version"] = "2022-11-28";
+              req.header["X-OAuth-Scopes"] = "repo, user";
+              req.header["X-Accepted-OAuth-Scopes"] = "repo";
+              req.header["Authorization"] = "Bearer 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";
+              req.body = JSON.stringify({"owner":"chaunceyTap","repo":"test3","base_tree":baseTreeSha,"tree": [{"path": "allWorkflows.txt","mode": "100644","type": "blob","content": newResult},{"path": "workflowsCommit.txt","mode": "100644","type": "blob","content": "Incoming github integration"}]})
+
+              
+              logInfo(req.body.base_tree);
+              req.execute();
+              
+              var response = req.response;
+              
+              var body = response.body; 
+              var bodyAsJson = JSON.parse(body);
+           /*   document.write(body);
+              logInfo(body);*/
+              
+              var newTreeSha = bodyAsJson.sha
+              logInfo(newTreeSha)
+              function commitToTree(newTreeSha, baseTreeSha){
+                    var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/commits'
+                    var req = new HttpClientRequest(URL);
+                    
+                    req.method = 'POST';
+                    
+                    req.header["User-Agent"] = "chaunceyTAP";
+                    req.header["Accept"] = "application/vnd.github+json";
+                    req.header["Content-Type"] = "application/json";
+                    req.header["X-GitHub-Api-Version"] = "2022-11-28";
+                    req.header["X-OAuth-Scopes"] = "repo, user";
+                    req.header["X-Accepted-OAuth-Scopes"] = "repo";
+                    req.header["Authorization"] = "Bearer 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";
+                    
+                    req.body = JSON.stringify({"parents": [baseTreeSha],"tree": newTreeSha,"message": "Recurring commit from Adobe Campaign Classic"})
+
+                    
+                    
+                    
+                    req.execute();
+                    
+                    var response = req.response;
+                    
+                    var body = response.body; 
+                    var bodyAsJson = JSON.parse(body);
+                    
+                    
+                    var newShaCommit = bodyAsJson.sha
+                    
+                                  function pushToRepo(newShaCommit){
+                                    var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/refs/heads/main'
+                                    var req = new HttpClientRequest(URL);
+                    
+                                    req.method = 'POST';
+                                    
+                                    req.header["User-Agent"] = "chaunceyTAP";
+                                    req.header["Accept"] = "application/vnd.github+json";
+                                    req.header["Content-Type"] = "application/json";
+                                    req.header["X-GitHub-Api-Version"] = "2022-11-28";
+                                    req.header["X-OAuth-Scopes"] = "repo, user";
+                                    req.header["X-Accepted-OAuth-Scopes"] = "repo";
+                                    req.header["Authorization"] = "Bearer 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";
+                                    
+                                    
+                                    req.body = JSON.stringify({"sha": newShaCommit ,"force":true})
+                                    
+                                    req.execute();
+                                    
+                                    var body = response.body; 
+                                    var bodyAsJson = JSON.parse(body);
+                                    
+                                    document.write(body);
+                                    logInfo(body);
+                                    
+                                    
+                                  }
+                    
+                    
+                    pushToRepo(newShaCommit);
+              }
+              commitToTree(newTreeSha, baseTreeSha)
+            }
+            createTree(baseTreeSha,treeSha);
+        
+        }
+        viewCommit(baseTreeSha);
+     }
+    
+
+getBranches();</script>
+      </js>
+      <query collision="0" distinct="true" img="nms:activities/query.png" keepAllExtraData="false" label="lowercase value of label contains 'gh'" mask="0" name="query" noAutoPk="false" noAutoPkFilter="false" onError="0" recipientLink="" runOnSimulation="true" schema="xtk:workflow" timezone="_inherit_" useSource="0" x="192" y="72">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="js"/>
+        </transitions>
+        <select>
+          <node analyze="false" expr="data" label="XML memo"/>
+          <node analyze="false" expr="@id" label="Primary key"/>
+        </select>
+        <where displayFilter="lowercase value of label contains 'gh'" filterName="backGroundFilterFrm" id="1916731401">
+          <condition compositeKey="" dependkey="" enabledIf="" expr="Lower(@label) LIKE '%' + 'gh' + '%'" internalId="1913847815"/>
+        </where>
+        <humanCond>Query: lowercase value of label contains 'gh'</humanCond>
+      </query>
+    </activities>
+    <variables/>
+  </query>
+</query-collection>
