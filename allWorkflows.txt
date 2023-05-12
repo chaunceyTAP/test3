@@ -1,4 +1,307 @@
 <query-collection>
+  <query _cs=" ()" background="xtk:backgrounds/neolane.png" id="1139648110" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient">
+    <activities>
+      <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start2" onError="0" runOnSimulation="true" timezone="_inherit_" x="169" y="92">
+        <transitions>
+          <initial enabled="true" name="initial" target="end22"/>
+        </transitions>
+      </start>
+      <end collision="0" img="xtk:activities/end.png" label="Set running false on restart" mask="0" name="end22" onError="0" runOnSimulation="true" timezone="_inherit_" x="305" y="92">
+        <initScript>instance.vars.running = false;</initScript>
+      </end>
+      <end collision="0" img="xtk:activities/end.png" label="End - Set Complete" mask="0" name="end2" onError="0" runOnSimulation="true" timezone="_inherit_" x="674" y="213">
+        <initScript>instance.vars.running = false;
+var startTime = instance.vars.startTime;
+var endTime = new Date();
+
+
+var seconds = Math.floor((endTime - (startTime))/1000);
+var minutes = Math.floor(seconds/60);
+var hours = Math.floor(minutes/60);
+var days = Math.floor(hours/24);
+
+hours = hours-(days*24);
+minutes = minutes-(days*24*60)-(hours*60);
+seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
+
+
+
+logInfo('Execution complete - Run time: ' + hours + "h:" + minutes + "m:" + seconds + "s");</initScript>
+      </end>
+      <schedule collision="0" img="xtk:activities/clock.png" label="Every 5 mins" mask="0" name="schedule2" onError="0" runOnSimulation="true" timezone="_inherit_" x="170" y="213">
+        <transitions>
+          <transition enabled="true" name="transition" target="lock"/>
+        </transitions>
+        <period>m_abDay='7' m_abDay[0]='0' m_abDay[1]='0' m_abDay[2]='0' m_abDay[3]='0' m_abDay[4]='0' m_abDay[5]='0' m_abDay[6]='0' m_abMonth='12' m_abMonth[0]='0' m_abMonth[10]='0' m_abMonth[11]='0' m_abMonth[1]='0' m_abMonth[2]='0' m_abMonth[3]='0' m_abMonth[4]='0' m_abMonth[5]='0' m_abMonth[6]='0' m_abMonth[7]='0' m_abMonth[8]='0' m_abMonth[9]='0' m_iDayMode='1' m_iMaxIter='0' m_iMonthDay='0' m_iMonthMode='0' m_iPosDay='0' m_iSpanDay='0' m_iSpanWeek='0' m_iTimeMode='3' m_iValidMode='1' m_iWeekDay='0' m_iWeekMode='0' m_tmFixedDay='' m_tmFixedTime='00:00:00.000' m_tmIterDate='' m_tmIterTime='00:00:00.000' m_tmOrgDate='' m_tmSpanTime='5m' m_tmStartDate='0001-11-24' m_tmStartTime='' m_tmStopDate='0001-11-24' m_tmStopTime='' m_vtmTime='0'</period>
+      </schedule>
+      <wait collision="0" delay="360" img="xtk:activities/hourglass.png" label="Wait 6m" mask="0" name="wait" onError="0" runOnSimulation="true" timezone="_inherit_" x="506" y="213">
+        <transitions>
+          <transition enabled="true" name="transition" target="end2"/>
+        </transitions>
+      </wait>
+      <jsx collision="0" img="xtk:activities/script.png" label="One execution at a time" mask="0" name="lock" onError="0" timezone="_inherit_" x="306" y="213">
+        <transitions>
+          <transition enabled="true" label="Nothing running" name="notRunning" target="wait"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <call>if (instance.vars.running != true){
+  instance.vars.running = true;
+  instance.vars.startTime = new Date();
+  task.postEvent(task.transitionByName("notRunning"));
+  logInfo('No other instance running - Running now')
+} else {
+  logWarning('Other Instance still running - Waiting for it to complete');
+}
+task.setCompleted();
+return 0;</call>
+        <recall>return 0;</recall>
+      </jsx>
+    </activities>
+  </query>
+  <query _cs=" ()" background="xtk:backgrounds/neolane.png" id="2107608" modelName="WKF18" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient">
+    <activities>
+      <deliveryEmail actionType="1" collision="0" contentType="0" deliverySel="1" form="deliveryOperation" img="nms:activities/email.png" label="Email delivery" mask="0" messageType="0" name="deliveryEmail" offerSel="0" onError="0" targetSel="1" timezone="_inherit_" x="203" xpathEditTarget="delivery" y="107">
+        <transitions>
+          <done enabled="false" label="Ok" name="done"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+      </deliveryEmail>
+      <readGroup collision="0" img="nms:activities/prefill.png" label="loyalty targets (LST31)" mask="0" name="readGroup" onError="0" runOnSimulation="true" schema="dem:transactionItem" timezone="_inherit_" x="54" y="108">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="deliveryEmail"/>
+        </transitions>
+        <extension label="" mappingType="sql" name="query" namespace="temp">
+          <element advanced="false" label="" name="query" pkSequence="" sqltable="grp2107845" unbound="false">
+            <compute-string expr=""/>
+            <key internal="true" name="internal">
+              <keyfield xpath="@id"/>
+            </key>
+            <attribute advanced="false" belongsTo="@id" label="Primary key" length="0" name="id" notNull="false" sql="true" sqlname="iId" type="long" xml="false"/>
+            <element advanced="false" externalJoin="false" label="Targeting dimension" name="target" revLink="" target="dem:transactionItem" type="link" unbound="false">
+              <join xpath-dst="@id" xpath-src="@id"/>
+            </element>
+          </element>
+        </extension>
+        <readGroup computeFolder="false" computeName="false" group-cs="loyalty targets (LST31)" group-id="2107845">
+          <group/>
+        </readGroup>
+      </readGroup>
+    </activities>
+  </query>
+  <query _cs=" ()" background="xtk:backgrounds/neolane.png" errorActivity="query" errorCount="0" eventCount="352" id="1227406333" modelName="newWorkflow" queryRestart="false" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient" simulation="false" taskCount="395">
+    <activities>
+      <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start" onError="0" runOnSimulation="true" timezone="_inherit_" x="16" y="80">
+        <transitions>
+          <initial enabled="true" name="initial" target="query" x="0" y="0"/>
+        </transitions>
+      </start>
+      <js collision="0" img="xtk:activities/script.png" label="JavaScript code" mask="0" name="js" onError="0" timezone="_inherit_" x="384" y="80">
+        <transitions>
+          <done enabled="true" label="Ok" name="done"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <script>loadLibrary("xtk:common.js");
+    loadLibrary("xtk:shared/json2.js");
+   
+    
+    
+    
+  
+    
+    function getBranches(){
+  
+
+
+         var req = new HttpClientRequest('https://api.github.com/repos/chaunceyTAP/test3/git/refs/heads/main');
+  
+          req.method = 'GET';
+      
+          req.header["User-Agent"] = "chaunceyTAP";
+          req.header["Accept"] = "application/vnd.github+json";
+          req.header["Content-Type"] = "application/json";
+          req.header["X-GitHub-Api-Version"] = "2022-11-28";
+          req.header["X-OAuth-Scopes"] = "repo, user";
+          req.header["X-Accepted-OAuth-Scopes"] = "repo";
+          req.header["Authorization"] = "Bearer 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";
+          
+          req.execute();
+          
+          var response = req.response;
+       
+          var body = response.body; 
+         // logInfo(typeof(body));
+          var bodyAsJson = JSON.parse(body);
+         
+          
+          var baseTreeSha = bodyAsJson.object.sha
+          
+          //logInfo(baseTreeSha);
+  
+      function viewCommit(baseTreeSha){
+        
+            var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/commits/' + baseTreeSha
+            var req = new HttpClientRequest(URL);
+            
+            req.method = 'GET';
+            
+            req.header["User-Agent"] = "chaunceyTAP";
+            req.header["Accept"] = "application/vnd.github+json";
+            req.header["Content-Type"] = "application/json";
+            req.header["X-GitHub-Api-Version"] = "2022-11-28";
+            req.header["X-OAuth-Scopes"] = "repo, user";
+            req.header["X-Accepted-OAuth-Scopes"] = "repo";
+            req.header["Authorization"] = "Bearer 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";
+            
+            req.execute();
+            
+            var response = req.response;
+          
+            var body = response.body; 
+            var bodyAsJson = JSON.parse(body);
+            
+            var treeSha = bodyAsJson.tree.sha;
+            
+            //document.write(treeSha);
+            logInfo("THis is the base tree:  " + baseTreeSha);
+            logInfo("This is the commit tree :  " + treeSha);
+            function createTree(baseTreeSha, treeSha){
+            
+                                function getData(){
+                                  var query = xtk.queryDef.create(
+                                    &lt;queryDef schema="temp:query" operation="select"&gt;
+                                      &lt;select&gt;
+                                        &lt;node expr="@id" /&gt;
+                                        &lt;node expr="data" /&gt;
+                                      &lt;/select&gt;
+                                    &lt;/queryDef&gt;
+                                    );
+                                    var result = query.ExecuteQuery();
+                                    var newResult = result.toXMLString()
+                                    //document.write('this is the new result :   ' + result);
+                                    //logInfo('this is the new result :   ' + result.toXMLString());
+                                    return newResult;
+                                }
+                                                    
+                                
+              var newResult = getData();
+              var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/trees'
+              var req = new HttpClientRequest(URL);
+              
+              req.method = 'POST';
+              
+              req.header["User-Agent"] = "chaunceyTAP";
+              req.header["Accept"] = "application/vnd.github+json";
+              req.header["Content-Type"] = "application/json";
+              req.header["X-GitHub-Api-Version"] = "2022-11-28";
+              req.header["X-OAuth-Scopes"] = "repo, user";
+              req.header["X-Accepted-OAuth-Scopes"] = "repo";
+              req.header["Authorization"] = "Bearer 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";
+              req.body = JSON.stringify({"owner":"chaunceyTap","repo":"test3","base_tree":baseTreeSha,"tree": [{"path": "allWorkflows.txt","mode": "100644","type": "blob","content": newResult}]});
+    logInfo(req.body);
+              
+             
+              req.execute();
+              
+              var response = req.response;
+              
+              var body = response.body; 
+              var bodyAsJson = JSON.parse(body);
+              logInfo(body);
+              
+              var newTreeSha = bodyAsJson.sha
+              logInfo("This is the new tree sha:   " + newTreeSha);
+              //logInfo(newResult);
+              function commitToTree(newTreeSha, baseTreeSha){
+                    var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/commits'
+                    var req = new HttpClientRequest(URL);
+                    
+                    req.method = 'POST';
+                    
+                    req.header["User-Agent"] = "chaunceyTAP";
+                    req.header["Accept"] = "application/vnd.github+json";
+                    req.header["Content-Type"] = "application/json";
+                    req.header["X-GitHub-Api-Version"] = "2022-11-28";
+                    req.header["X-OAuth-Scopes"] = "repo, user";
+                    req.header["X-Accepted-OAuth-Scopes"] = "repo";
+                    req.header["Authorization"] = "Bearer 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";
+                    
+                    req.body = JSON.stringify({"parents": [baseTreeSha],"tree": newTreeSha,"message": "Recurring commit from Adobe Campaign Classic"})
+
+                    
+                    
+                    
+                    req.execute();
+                    
+                    var response = req.response;
+                    
+                    var body = response.body; 
+                    var bodyAsJson = JSON.parse(body);
+                    
+                    
+                    var newShaCommit = bodyAsJson.sha
+                    
+                                  function pushToRepo(newShaCommit){
+                                    var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/refs/heads/main'
+                                    var req = new HttpClientRequest(URL);
+                    
+                                    req.method = 'POST';
+                                    
+                                    req.header["User-Agent"] = "chaunceyTAP";
+                                    req.header["Accept"] = "application/vnd.github+json";
+                                    req.header["Content-Type"] = "application/json";
+                                    req.header["X-GitHub-Api-Version"] = "2022-11-28";
+                                    req.header["X-OAuth-Scopes"] = "repo, user";
+                                    req.header["X-Accepted-OAuth-Scopes"] = "repo";
+                                    req.header["Authorization"] = "Bearer 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";
+                                    
+                                    
+                                    req.body = JSON.stringify({"sha": newShaCommit ,"force":true})
+                                    
+                                    req.execute();
+                                    
+                                    var body = response.body; 
+                                    var bodyAsJson = JSON.parse(body);
+                                    
+                                    document.write(body);
+                                    logInfo(body);
+                                    
+                                    
+                                  }
+                    
+                    
+                    pushToRepo(newShaCommit);
+              }
+              commitToTree(newTreeSha, baseTreeSha);
+              
+            }
+            createTree(baseTreeSha,treeSha);
+        
+        }
+        viewCommit(baseTreeSha);
+        
+     }
+    
+
+getBranches();</script>
+      </js>
+      <query collision="0" distinct="true" img="nms:activities/query.png" keepAllExtraData="false" label="lowercase value of label contains 'gh' or lowercase value of label contains 'cut'" mask="0" name="query" noAutoPk="false" noAutoPkFilter="false" onError="0" recipientLink="" runOnSimulation="true" schema="xtk:workflow" timezone="_inherit_" useSource="0" x="192" y="72">
+        <errors/>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="js"/>
+        </transitions>
+        <select>
+          <node analyze="false" expr="data" label="XML memo"/>
+          <node analyze="false" expr="@id" label="Primary key"/>
+        </select>
+        <where displayFilter="lowercase value of label contains 'gh' or lowercase value of label contains 'cut'" filterName="backGroundFilterFrm" id="1363214386">
+          <condition boolOperator="OR" compositeKey="" dependkey="" enabledIf="" expr="Lower(@label) LIKE '%' + 'gh' + '%'" internalId="1356660782"/>
+          <condition compositeKey="" dependkey="" enabledIf="" expr="Lower(@label) LIKE '%' + 'cut' + '%'" internalId="1358233648"/>
+        </where>
+        <humanCond>Query: lowercase value of label contains 'gh' or lowercase value of label contains 'cut'</humanCond>
+      </query>
+    </activities>
+    <variables/>
+  </query>
   <query _cs=" ()" background="xtk:backgrounds/neolane.png" errorActivity="delivery" errorCount="0" eventCount="65" id="1207187533" keepResult="true" modelName="newWorkflow" queryRestart="false" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="cha:chaunceysTest" simulation="false" taskCount="88">
     <activities>
       <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start" onError="0" runOnSimulation="true" timezone="_inherit_" x="48" y="56">
@@ -60,5 +363,2439 @@ for each(var package in packages){
       </js>
     </activities>
     <variables tableName_dlv1207502927_delivery-all="wkf1207187533_87_1_ALL"/>
+  </query>
+  <query _cs=" ()" background="xtk:backgrounds/neolane.png" errorActivity="soapImportBatchEvent" errorCount="1" eventCount="2255" id="1163141443" queryRestart="false" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient" simulation="false" taskCount="2256">
+    <script>loadLibrary("nms:messageCenter.js");
+function onStart()
+{
+  instance.vars.running = false;
+  instance.vars.extAccountId = 3736;
+}</script>
+    <activities>
+      <start collision="0" img="xtk:activities/start.png" label="" mask="0" name="orJoinEvent" onError="0" runOnSimulation="true" timezone="_inherit_" x="608" y="208">
+        <transitions>
+          <initial enabled="true" name="initial" target="writerEvent"/>
+        </transitions>
+      </start>
+      <start collision="0" img="xtk:activities/start.png" label="" mask="0" name="orJoinBlMsg" onError="0" runOnSimulation="true" timezone="_inherit_" x="488" y="480">
+        <transitions>
+          <initial enabled="true" name="initial" target="writerBlMsg"/>
+        </transitions>
+      </start>
+      <start collision="0" img="xtk:activities/start.png" label="" mask="0" name="orJoinBl" onError="0" runOnSimulation="true" timezone="_inherit_" x="616" y="744">
+        <transitions>
+          <initial enabled="true" name="initial" target="forkBl"/>
+        </transitions>
+      </start>
+      <start collision="0" img="xtk:activities/start.png" label="" mask="0" name="orJoinUrl" onError="0" runOnSimulation="true" timezone="_inherit_" x="480" y="1056">
+        <transitions>
+          <initial enabled="true" name="initial" target="enrichUrlDlv"/>
+        </transitions>
+      </start>
+      <start collision="0" img="xtk:activities/start.png" label="" mask="0" name="orJoinTl" onError="0" runOnSimulation="true" timezone="_inherit_" x="608" y="1264">
+        <transitions>
+          <initial enabled="true" name="initial" target="enrichTlDlv"/>
+        </transitions>
+      </start>
+      <end collision="0" img="xtk:activities/end.png" label="End" mask="0" name="end" onError="0" runOnSimulation="true" timezone="_inherit_" x="504" y="1544">
+        <initScript>setOption('MC_LastQuarantinesSynch_' + vars.cellId, new Date(vars.dateCurrentStart.getTime()));
+var sg = new StringGroup("nms:messageCenter");
+logInfo(sg.synchDone());
+instance.vars.running = false;</initScript>
+      </end>
+      <end collision="0" img="xtk:activities/end.png" label="Check rejects" mask="0" name="endBlMsgRemainder" onError="0" runOnSimulation="true" timezone="_inherit_" x="800" y="488">
+        <initScript>// Could check that all rejects are in the DB</initScript>
+      </end>
+      <end collision="0" img="xtk:activities/end.png" label="Check rejects" mask="0" name="endQuarantinesRemainder" onError="0" runOnSimulation="true" timezone="_inherit_" x="504" y="1624">
+        <initScript>// Could check that all rejects are in the DB</initScript>
+      </end>
+      <fork collision="0" img="xtk:activities/fork.png" label="Delivery" mask="0" name="forkBl" onError="0" runOnSimulation="true" timezone="_inherit_" x="720" y="744">
+        <transitions>
+          <transition enabled="true" label="" name="transition1" target="enrichBlDlv"/>
+          <transition enabled="true" label="" name="transition2" target="dedupBlDlv"/>
+          <transition enabled="true" label="" name="transition3" target="enrichBlOldDlv"/>
+        </transitions>
+      </fork>
+      <fork collision="0" img="xtk:activities/fork.png" label="Delivery folder" mask="0" name="forkBlDlvFolder" onError="0" runOnSimulation="true" timezone="_inherit_" x="1432" y="648">
+        <transitions>
+          <transition enabled="true" label="" name="transition1" target="enrichBlDlvNewFolder"/>
+          <transition enabled="true" label="" name="transition2" target="dedupBlDlvNewFolder"/>
+        </transitions>
+      </fork>
+      <schedule collision="0" img="xtk:activities/clock.png" label="Scheduler" mask="0" name="schedule" onError="0" runOnSimulation="true" timezone="_inherit_" x="16" y="16">
+        <transitions>
+          <transition enabled="true" name="transition" target="lock"/>
+        </transitions>
+        <period>m_abDay='7' m_abDay[0]='0' m_abDay[1]='0' m_abDay[2]='0' m_abDay[3]='0' m_abDay[4]='0' m_abDay[5]='0' m_abDay[6]='0' m_abMonth='12' m_abMonth[0]='0' m_abMonth[10]='0' m_abMonth[11]='0' m_abMonth[1]='0' m_abMonth[2]='0' m_abMonth[3]='0' m_abMonth[4]='0' m_abMonth[5]='0' m_abMonth[6]='0' m_abMonth[7]='0' m_abMonth[8]='0' m_abMonth[9]='0' m_iDayMode='1' m_iMaxIter='0' m_iMonthDay='0' m_iMonthMode='0' m_iPosDay='0' m_iSpanDay='0' m_iSpanWeek='0' m_iTimeMode='3' m_iValidMode='1' m_iWeekDay='0' m_iWeekMode='0' m_tmFixedDay='' m_tmFixedTime='00:00:00.000' m_tmIterDate='' m_tmIterTime='00:00:00.000' m_tmOrgDate='' m_tmSpanTime='1h' m_tmStartDate='0001-11-24' m_tmStartTime='' m_tmStopDate='0001-11-24' m_tmStopTime='' m_vtmTime='0'</period>
+      </schedule>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Archiving finished?" mask="0" name="jsEventsDone" onError="0" runOnSimulation="true" timezone="_inherit_" x="64" y="208">
+        <initScript>vars.done = false;
+var optionRtName = "MC_LastEventsRtSynch_" + vars.cellId;
+var optionBatchName = "MC_LastEventsBatchSynch_" + vars.cellId;
+var optionName = vars.isRt ? optionRtName : optionBatchName;
+
+var sg = new StringGroup("nms:messageCenter");
+
+if( vars.dateCurrentEnd ) {
+  // We just did something, save option
+  logInfo(sg[vars.isRt ? "synchRtEvents" : "synchBatchEvents"](NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+  // Pretend we didn't synch the last second not to miss anything because of
+  // db datetime precision
+  setOption(optionName, new Date(vars.dateCurrentEnd.getTime()-vars.SAFETY_DELAY_MS));
+}
+
+// Start from the option
+var option = getOption(optionName, false);
+if( option )
+  vars.dateCurrentStart = option;
+
+var batchSyncDone = false;
+// Detect if we are up to date in the synchronization
+// Since we reload from the option, we must add an additional safety delay
+// because of DB precision. Indeed the value from the option may be truncated
+// at the precision of 1 sec. Example:
+// dateCurrentStart = 1442931184000 and NOW-SAFETY_DELAY_MS = 1442931184864
+// When done, value in DB is supposed to be vars.NOW-vars.SAFETY_DELAY_MS
+// so we add another delay for the comparison: vars.NOW-(2*vars.SAFETY_DELAY_MS)
+if( vars.dateCurrentStart &amp;&amp;
+    vars.dateCurrentStart.getTime() &gt;= (vars.NOW.getTime()-(2*vars.SAFETY_DELAY_MS)) ) {
+  // Done
+  logInfo(sg[vars.isRt ? "synchRtEventsDone" : "synchBatchEventsDone"]());
+  vars.dateCurrentStart = "";
+  vars.dateCurrentEnd = "";
+  batchSyncDone = true;
+  if( vars.isRt )
+  {
+    vars.done = true;
+    vars.isRt = false;
+    return;
+  }
+}
+
+// Done with batch: do RT now
+if( batchSyncDone )
+{
+  vars.isRt = true;
+  // Start from the option
+  var optionRt = getOption(optionRtName, false);
+  if( optionRt )
+    vars.dateCurrentStart = optionRt;
+}
+
+// Incremental until we reach workflow start date
+if( !vars.dateCurrentStart ||
+    vars.NOW.getTime() &lt;= (vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS) )
+  vars.dateCurrentEnd = vars.NOW;
+else
+  vars.dateCurrentEnd = new Date(vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS);
+
+logInfo(sg[vars.isRt ? "synchRtEventsStart" : "synchBatchEventsStart"](vars.dateCurrentStart ? NL.Locale.formatDateTime(vars.dateCurrentStart) : "", NL.Locale.formatDateTime(vars.dateCurrentEnd)));</initScript>
+        <transitions>
+          <test enabled="true" label="No" name="transition1" target="jsEventsFDA">
+            <condition>!vars.done</condition>
+          </test>
+          <default enabled="true" label="Yes" name="default" target="jsBlMsgDone"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Archiving finished?" mask="0" name="jsBlMsgDone" onError="0" runOnSimulation="true" timezone="_inherit_" x="64" y="480">
+        <initScript>vars.done = false;
+var optionName = "MC_LastBlMsgSynch_" + vars.cellId;
+var sg = new StringGroup("nms:messageCenter");
+
+if( vars.dateCurrentEnd ) {
+  // We just did something, save option
+  logInfo(sg.synchBlMsg(NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+  // Pretend we didn't synch the last second not to miss anything because of
+  // db datetime precision
+  setOption(optionName, new Date(vars.dateCurrentEnd.getTime()-vars.SAFETY_DELAY_MS));
+}
+
+// Start from the option
+var option = getOption(optionName, false);
+if( option )
+  vars.dateCurrentStart = option;
+
+// Detect if we are up to date in the synchronization
+// Since we reload from the option, we must add an additional safety delay
+// because of DB precision. Indeed the value from the option may be truncated
+// at the precision of 1 sec. Example:
+// dateCurrentStart = 1442931184000 and NOW-SAFETY_DELAY_MS = 1442931184864
+// When done, value in DB is supposed to be vars.NOW-vars.SAFETY_DELAY_MS
+// so we add another delay for the comparison: vars.NOW-(2*vars.SAFETY_DELAY_MS)
+if( vars.dateCurrentStart &amp;&amp;
+    vars.dateCurrentStart.getTime() &gt;= (vars.NOW.getTime()-(2*vars.SAFETY_DELAY_MS)) ) {
+  // Done
+  logInfo(sg.synchBlMsgDone());
+  vars.dateCurrentStart = "";
+  vars.dateCurrentEnd = "";
+  vars.done = true;
+}
+else {
+  // Incremental until we reach workflow start date
+  if( !vars.dateCurrentStart ||
+      vars.NOW.getTime() &lt;= (vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS) )
+    vars.dateCurrentEnd = vars.NOW;
+  else
+    vars.dateCurrentEnd = new Date(vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS);
+
+  logInfo(sg.synchBlMsgStart(vars.dateCurrentStart ? NL.Locale.formatDateTime(vars.dateCurrentStart) : "", NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+}</initScript>
+        <transitions>
+          <test enabled="true" label="No" name="transition1" target="jsBlMsgFDA">
+            <condition>!vars.done</condition>
+          </test>
+          <default enabled="true" label="Yes" name="default" target="jsBlDone"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Archiving finished?" mask="0" name="jsBlDone" onError="0" runOnSimulation="true" timezone="_inherit_" x="64" y="752">
+        <initScript>vars.done = false;
+var updateLastModified = getOption("MC_Update_BlLastModified");
+if( updateLastModified != null )
+  vars.updateBlLastModified = updateLastModified;
+else
+  vars.updateBlLastModified = 1;
+var optionRtName = "MC_LastBlRtSynch_" + vars.cellId;
+var optionBatchName = "MC_LastBlBatchSynch_" + vars.cellId;
+var optionName = vars.isRt ? optionRtName : optionBatchName;
+
+var sg = new StringGroup("nms:messageCenter");
+
+if( vars.dateCurrentEnd ) {
+  // We just did something, save option
+  logInfo(sg[vars.isRt ? "synchRtBl" : "synchBatchBl"](NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+  // Pretend we didn't synch the last second not to miss anything because of
+  // db datetime precision
+  setOption(optionName, new Date(vars.dateCurrentEnd.getTime()-vars.SAFETY_DELAY_MS));
+}
+
+// Start from the option
+var option = getOption(optionName, false);
+if( option )
+  vars.dateCurrentStart = option;
+
+var batchSyncDone = false;
+// Detect if we are up to date in the synchronization
+// Since we reload from the option, we must add an additional safety delay
+// because of DB precision. Indeed the value from the option may be truncated
+// at the precision of 1 sec. Example:
+// dateCurrentStart = 1442931184000 and NOW-SAFETY_DELAY_MS = 1442931184864
+// When done, value in DB is supposed to be vars.NOW-vars.SAFETY_DELAY_MS
+// so we add another delay for the comparison: vars.NOW-(2*vars.SAFETY_DELAY_MS)
+if( vars.dateCurrentStart &amp;&amp;
+    vars.dateCurrentStart.getTime() &gt;= (vars.NOW.getTime()-(2*vars.SAFETY_DELAY_MS)) ) {
+  // Done
+  logInfo(sg[vars.isRt ? "synchRtBlDone" : "synchBatchBlDone"]());
+  vars.dateCurrentStart = "";
+  vars.dateCurrentEnd = "";
+  batchSyncDone = true;
+  if( vars.isRt )
+  {
+    vars.done = true;
+    vars.isRt = false;
+    return;
+  }
+}
+
+// Done with batch: do RT now
+if( batchSyncDone )
+{
+  vars.isRt = true;
+  // Start from the option
+  var optionRt = getOption(optionRtName, false);
+  if( optionRt )
+    vars.dateCurrentStart = optionRt;
+}
+
+// Incremental until we reach workflow start date
+if( !vars.dateCurrentStart ||
+    vars.NOW.getTime() &lt;= (vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS) )
+  vars.dateCurrentEnd = vars.NOW;
+else
+  vars.dateCurrentEnd = new Date(vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS);
+
+logInfo(sg[vars.isRt ? "synchRtBlStart" : "synchBatchBlStart"](vars.dateCurrentStart ? NL.Locale.formatDateTime(vars.dateCurrentStart) : "", NL.Locale.formatDateTime(vars.dateCurrentEnd)));</initScript>
+        <transitions>
+          <test enabled="true" label="No" name="transition1" target="jsBlFDA">
+            <condition>!vars.done</condition>
+          </test>
+          <default enabled="true" label="Yes" name="default" target="jsUrlDone"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Archiving finished?" mask="0" name="jsUrlDone" onError="0" runOnSimulation="true" timezone="_inherit_" x="64" y="1056">
+        <initScript>vars.done = false;
+var optionName = "MC_LastUrlSynch_" + vars.cellId;
+var sg = new StringGroup("nms:messageCenter");
+
+if( vars.dateCurrentEnd ) {
+  // We just did something, save option
+  logInfo(sg.synchUrls(NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+  // Pretend we didn't synch the last second not to miss anything because of
+  // db datetime precision
+  setOption(optionName, new Date(vars.dateCurrentEnd.getTime()-vars.SAFETY_DELAY_MS));
+}
+
+// Start from the option
+var option = getOption(optionName, false);
+if( option )
+  vars.dateCurrentStart = option;
+
+// Detect if we are up to date in the synchronization
+// Since we reload from the option, we must add an additional safety delay
+// because of DB precision. Indeed the value from the option may be truncated
+// at the precision of 1 sec. Example:
+// dateCurrentStart = 1442931184000 and NOW-SAFETY_DELAY_MS = 1442931184864
+// When done, value in DB is supposed to be vars.NOW-vars.SAFETY_DELAY_MS
+// so we add another delay for the comparison: vars.NOW-(2*vars.SAFETY_DELAY_MS)
+if( vars.dateCurrentStart &amp;&amp;
+    vars.dateCurrentStart.getTime() &gt;= (vars.NOW.getTime()-(2*vars.SAFETY_DELAY_MS)) ) {
+  // Done
+  logInfo(sg.synchUrlsDone());
+  vars.dateCurrentStart = "";
+  vars.dateCurrentEnd = "";
+  vars.done = true;
+}
+else {
+  // Incremental until we reach workflow start date
+  if( !vars.dateCurrentStart ||
+      vars.NOW.getTime() &lt;= (vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS) )
+    vars.dateCurrentEnd = vars.NOW;
+  else
+    vars.dateCurrentEnd = new Date(vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS);
+
+  logInfo(sg.synchUrlsStart(vars.dateCurrentStart ? NL.Locale.formatDateTime(vars.dateCurrentStart) : "", NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+}</initScript>
+        <transitions>
+          <test enabled="true" label="No" name="transition1" target="jsUrlFDA">
+            <condition>!vars.done</condition>
+          </test>
+          <default enabled="true" label="Yes" name="default" target="jsTlDone"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Archiving finished?" mask="0" name="jsTlDone" onError="0" runOnSimulation="true" timezone="_inherit_" x="64" y="1264">
+        <initScript>vars.done = false;
+var optionRtName = "MC_LastTlRtSynch_" + vars.cellId;
+var optionBatchName = "MC_LastTlBatchSynch_" + vars.cellId;
+var optionName = vars.isRt ? optionRtName : optionBatchName;
+
+var sg = new StringGroup("nms:messageCenter");
+
+if( vars.dateCurrentEnd ) {
+  // We just did something, save option
+  logInfo(sg[vars.isRt ? "synchRtTl" : "synchBatchTl"](NL.Locale.formatDateTime(vars.dateCurrentEnd)));
+  // Pretend we didn't synch the last second not to miss anything because of
+  // db datetime precision
+  setOption(optionName, new Date(vars.dateCurrentEnd.getTime()-vars.SAFETY_DELAY_MS));
+}
+
+// Start from the option
+var option = getOption(optionName, false);
+if( option )
+  vars.dateCurrentStart = option;
+
+var batchSyncDone = false;
+// Detect if we are up to date in the synchronization
+// Since we reload from the option, we must add an additional safety delay
+// because of DB precision. Indeed the value from the option may be truncated
+// at the precision of 1 sec. Example:
+// dateCurrentStart = 1442931184000 and NOW-SAFETY_DELAY_MS = 1442931184864
+// When done, value in DB is supposed to be vars.NOW-vars.SAFETY_DELAY_MS
+// so we add another delay for the comparison: vars.NOW-(2*vars.SAFETY_DELAY_MS)
+if( vars.dateCurrentStart &amp;&amp;
+    vars.dateCurrentStart.getTime() &gt;= (vars.NOW.getTime()-(2*vars.SAFETY_DELAY_MS)) ) {
+  // Done
+  logInfo(sg[vars.isRt ? "synchRtTlDone" : "synchBatchTlDone"]());
+  vars.dateCurrentStart = "";
+  vars.dateCurrentEnd = "";
+  batchSyncDone = true;
+  if( vars.isRt )
+  {
+    vars.done = true;
+    vars.isRt = false;
+    return;
+  }
+}
+
+// Done with batch: do RT now
+if( batchSyncDone )
+{
+  vars.isRt = true;
+  // Start from the option
+  var optionRt = getOption(optionRtName, false);
+  if( optionRt )
+    vars.dateCurrentStart = optionRt;
+}
+
+// Incremental until we reach workflow start date
+if( !vars.dateCurrentStart ||
+    vars.NOW.getTime() &lt;= (vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS) )
+  vars.dateCurrentEnd = vars.NOW;
+else
+  vars.dateCurrentEnd = new Date(vars.dateCurrentStart.getTime()+vars.MAX_DURATION_SYNCH_MS);
+
+logInfo(sg[vars.isRt ? "synchRtTlStart" : "synchBatchTlStart"](vars.dateCurrentStart ? NL.Locale.formatDateTime(vars.dateCurrentStart) : "", NL.Locale.formatDateTime(vars.dateCurrentEnd)));</initScript>
+        <transitions>
+          <test enabled="true" label="No" name="transition1" target="jsTlFDA">
+            <condition>!vars.done</condition>
+          </test>
+          <default enabled="true" label="Yes" name="default" target="soapImportQuarantines"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Protocol" mask="0" name="jsEventsFDA" onError="0" runOnSimulation="true" timezone="_inherit_" x="160" y="200">
+        <transitions>
+          <test enabled="true" label="FDA RT" name="transition1" target="dbImportRtEvent">
+            <condition>vars.isFDA &amp;&amp; vars.isRt</condition>
+          </test>
+          <test enabled="true" label="FDA batch" name="transition2" target="dbImportBatchEvent">
+            <condition>vars.isFDA &amp;&amp; !vars.isRt</condition>
+          </test>
+          <test enabled="true" label="SOAP RT" name="transition3" target="soapImportRtEvent">
+            <condition>!vars.isFDA &amp;&amp; vars.isRt</condition>
+          </test>
+          <test enabled="true" label="SOAP batch" name="transition4" target="soapImportBatchEvent">
+            <condition>!vars.isFDA &amp;&amp; !vars.isRt</condition>
+          </test>
+          <default enabled="false" label="False" name="default"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Protocol" mask="0" name="jsBlMsgFDA" onError="0" runOnSimulation="true" timezone="_inherit_" x="160" y="472">
+        <transitions>
+          <test enabled="true" label="FDA" name="transition1" target="dbImportBlMsg">
+            <condition>vars.isFDA</condition>
+          </test>
+          <default enabled="true" label="SOAP" name="default" target="soapImportBlMsg"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Protocol" mask="0" name="jsBlFDA" onError="0" runOnSimulation="true" timezone="_inherit_" x="160" y="744">
+        <transitions>
+          <test enabled="true" label="FDA RT" name="transition1" target="dbImportRtBl">
+            <condition>vars.isFDA &amp;&amp; vars.isRt</condition>
+          </test>
+          <test enabled="true" label="FDA batch" name="transition2" target="dbImportBatchBl">
+            <condition>vars.isFDA &amp;&amp; !vars.isRt</condition>
+          </test>
+          <test enabled="true" label="SOAP RT" name="transition3" target="soapImportRtBl">
+            <condition>!vars.isFDA &amp;&amp; vars.isRt</condition>
+          </test>
+          <test enabled="true" label="SOAP batch" name="transition4" target="soapImportBatchBl">
+            <condition>!vars.isFDA &amp;&amp; !vars.isRt</condition>
+          </test>
+          <default enabled="false" label="False" name="default"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Protocol" mask="0" name="jsUrlFDA" onError="0" runOnSimulation="true" timezone="_inherit_" x="160" y="1048">
+        <transitions>
+          <test enabled="true" label="FDA" name="transition1" target="dbImportUrl">
+            <condition>vars.isFDA</condition>
+          </test>
+          <default enabled="true" label="SOAP" name="default" target="soapImportUrl"/>
+        </transitions>
+      </jstest>
+      <jstest collision="0" img="xtk:activities/condition.png" label="Protocol" mask="0" name="jsTlFDA" onError="0" runOnSimulation="true" timezone="_inherit_" x="160" y="1256">
+        <transitions>
+          <test enabled="true" label="FDA RT" name="transition1" target="dbImportRtTl">
+            <condition>vars.isFDA &amp;&amp; vars.isRt</condition>
+          </test>
+          <test enabled="true" label="FDA batch" name="transition2" target="dbImportBatchTl">
+            <condition>vars.isFDA &amp;&amp; !vars.isRt</condition>
+          </test>
+          <test enabled="true" label="SOAP RT" name="transition3" target="soapImportRtTl">
+            <condition>!vars.isFDA &amp;&amp; vars.isRt</condition>
+          </test>
+          <test enabled="true" label="SOAP batch" name="transition4" target="soapImportBatchTl">
+            <condition>!vars.isFDA &amp;&amp; !vars.isRt</condition>
+          </test>
+          <default enabled="false" label="False" name="default"/>
+        </transitions>
+      </jstest>
+      <js collision="0" img="xtk:activities/script.png" label="Connection information" mask="0" name="init" onError="0" timezone="_inherit_" x="296" y="16">
+        <transitions>
+          <done enabled="true" label="Ok" name="done" target="jsEventsDone"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <script>loadLibrary("/nl/core/shared/nl.js");
+NL.require("/nl/core/shared/xtk.js")
+  .require('/nms/executionInstance.js');
+
+try {
+  // Power(2, 56). NEEDS to be a string since JS cannot handle such precision
+  vars.CELL_OFFSET = "72057594037927936";
+  var sg = new StringGroup("nms:messageCenter");
+
+  // Events histo mapping
+  var queryMapping = xtk.queryDef.create(
+    &lt;queryDef schema="nms:deliveryMapping" operation="getIfExists"&gt;
+        &lt;select&gt;
+          &lt;node expr="@id"/&gt;
+        &lt;/select&gt;
+        &lt;where&gt;
+          &lt;condition expr="@name='mapEventHisto'"/&gt;
+        &lt;/where&gt;
+    &lt;/queryDef&gt;
+  );
+  vars.mappingId = queryMapping.ExecuteQuery().@id;
+  vars.TIME_DIFF_S = 0;
+
+  // Prepare cell id, org unit, ext account, ...
+  var extAccount = instance.vars.extAccountId;
+
+  if( extAccount === "local" ) {
+    vars.FDAExtAccountId = 0;
+    vars.cellExtAccount = 0;
+    vars.cellId = getOption("NmsExecutionInstanceId");
+    var queryMcOperator = xtk.queryDef.create(
+      &lt;queryDef schema="xtk:operator" operation="getIfExists"&gt;
+          &lt;select&gt;
+            &lt;node expr="@id"/&gt;
+            &lt;node expr="[access/homeDir/@fullName]"/&gt;
+          &lt;/select&gt;
+          &lt;where&gt;
+            &lt;condition expr="@name='mc'"/&gt;
+          &lt;/where&gt;
+      &lt;/queryDef&gt;
+    );
+    vars.homeDir = String(queryMcOperator.ExecuteQuery().access.homeDir.@fullName);
+    vars.isFDA = true;
+  }
+  else {
+    var rtCell = NL.ExecutionInstance.getExtAccount(extAccount, NL.ExecutionInstance.MESSAGECENTER_TYPE);
+    if( !NL.XTK.parseBoolean(rtCell.@active) ) {
+      logError(sg.synchExtAccountDisabled(extAccount));
+    }
+    var isFDA = (String(rtCell.@mcHistoMethod) == "1");
+    if( isFDA ) {
+      if( !String(rtCell.fdaExtAccount.@name) ) {
+        logError(sg.synchExtAccountNoFDA(extAccount));
+      }
+      if( !NL.XTK.parseBoolean(rtCell.fdaExtAccount.@active) ) {
+        logError(sg.synchExtAccountDisabled(rtCell.@["fdaExtAccount-id"]));
+      }
+    }
+    vars.homeDir = NL.ExecutionInstance.getRemoteHomeDir(String(rtCell.@server), String(rtCell.@account), String(rtCell.@password));
+    if( !String(vars.homeDir) || String(vars.homeDir) == "/" ) {
+      logError(sg.synchExtAccountNoHomeDir(extAccount));
+    }
+    vars.cellId = NL.XTK.parseInt(rtCell.@executionInstanceId);
+    vars.cellExtAccount = NL.XTK.parseInt(extAccount);
+    vars.FDAExtAccountId = rtCell.@["fdaExtAccount-id"];
+    vars.login = String(rtCell.@account);
+    vars.password = String(rtCell.@password);
+    vars.url = String(rtCell.@server);
+    vars.TIME_DIFF_S = NL.ExecutionInstance.getRemoteTimeDiff(String(rtCell.@server), String(rtCell.@account), String(rtCell.@password));
+    vars.isFDA = isFDA;
+
+    logInfo(sg.startSynchForExtAccount(String(rtCell.@label), String(rtCell.@name), vars.cellId, vars.url, vars.TIME_DIFF_S));
+  }
+
+  vars.NOW = new Date(getCurrentDate().getTime() + (vars.TIME_DIFF_S*1000));
+  vars.MAX_DURATION_SYNCH_MS = 60*60*24*1000; // 1 day
+  vars.SAFETY_DELAY_MS = 30000; // 30 seconds
+  vars.isRt = false;
+
+} catch( e ) {
+  logError(e);
+}</script>
+      </js>
+      <js collision="0" img="xtk:activities/script.png" label="Tracking activation and flagging for update" mask="0" name="jsBlDlv" onError="0" timezone="_inherit_" x="2320" y="704">
+        <transitions>
+          <done enabled="true" label="Ok" name="done" target="enrichBlDlv"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <script>var queryDeliveries = xtk.queryDef.create(
+          &lt;queryDef schema="temp:writerBlDlv" operation="select"&gt;
+            &lt;select&gt;
+              &lt;node expr="@id"/&gt;
+            &lt;/select&gt;
+          &lt;/queryDef&gt;
+        );
+        var ndDeliveries = queryDeliveries.ExecuteQuery();
+
+        for each( var delivery in ndDeliveries.writerBlDlv )
+        {
+          var newDelivery = &lt;delivery id={delivery.@id} xtkschema="nms:delivery" _operation="update"&gt;
+                &lt;indicators dirty="8"/&gt;
+                &lt;tracking enabled="true"/&gt;
+              &lt;/delivery&gt;;
+
+          xtk.session.Write(newDelivery);
+        }</script>
+      </js>
+      <js collision="0" img="xtk:activities/script.png" label="Marking for updating previous deliveries" mask="0" name="jsBlOldDlv" onError="0" timezone="_inherit_" x="1232" y="832">
+        <transitions>
+          <done enabled="true" label="Ok" name="done" target="enrichBlDlv"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <script>var queryDeliveries = xtk.queryDef.create(
+          &lt;queryDef schema="temp:enrichBlOldDlv" operation="select"&gt;
+            &lt;select&gt;
+              &lt;node alias="@deliveryId" expr="[target/@delivery-id]"/&gt;
+            &lt;/select&gt;
+          &lt;/queryDef&gt;
+        );
+        var ndDeliveries = queryDeliveries.ExecuteQuery();
+
+        for each( var enrich in ndDeliveries.enrichBlOldDlv )
+        {
+          var newDelivery = &lt;delivery id={enrich.@deliveryId} xtkschema="nms:delivery" _operation="update"&gt;
+                &lt;indicators dirty="9"/&gt;
+              &lt;/delivery&gt;;
+
+          xtk.session.Write(newDelivery);
+        }</script>
+      </js>
+      <jsx collision="0" img="xtk:activities/script.png" label="One execution at a time" mask="0" name="lock" onError="0" timezone="_inherit_" x="128" y="16">
+        <transitions>
+          <transition enabled="true" label="Nothing running" name="notRunning" target="init"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <call>if (instance.vars.running == false){
+  instance.vars.running = true;
+  task.postEvent(task.transitionByName("notRunning"));
+} else {
+  var sg = new StringGroup("nms:messageCenter");
+  logWarning(sg.synchWkfAlreadyRunning());
+}
+task.setCompleted();
+return 0;</call>
+        <recall>return 0;</recall>
+      </jsx>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="true" label="Enrich" mainSet="soapImportQuarantines" mask="0" name="enrich" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="200" y="1552">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="writerQuarantines"/>
+        </transitions>
+        <mainReconc enabled="true" outerJoin="true" schema="nms:address">
+          <condition dstExpr="@address" srcExpr="@address"/>
+          <condition dstExpr="@type" srcExpr="@type"/>
+        </mainReconc>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="true" label="Delivery" mainSet="orJoinTl" mask="0" name="enrichTlDlv" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="712" y="1264">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="extractTlUrl"/>
+        </transitions>
+        <select>
+          <node alias="@deliveryId" analyze="false" expr="[broadLogEventHisto/@delivery-id]"/>
+        </select>
+        <links cardinality="1" name="broadLogEventHisto" schema="nms:broadLogEventHisto">
+          <condition dstExpr="@id" srcExpr="@broadLogHistoId"/>
+        </links>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="true" label="Tracking URL" mainSet="extractTlUrl" mask="0" name="enrichTlUrl" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="976" y="1216">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="unionTl"/>
+        </transitions>
+        <select>
+          <node alias="@urlId" analyze="false" expr="[trackingUrl/@id]"/>
+        </select>
+        <links cardinality="2" name="trackingUrl" schema="nms:trackingUrl">
+          <condition dstExpr="@tagId" srcExpr="@tagId + '_' + @deliveryId"/>
+        </links>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="false" label="Delivery" mainSet="orJoinUrl" mask="0" name="enrichUrlDlv" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="576" y="1056">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="dedupUrl"/>
+        </transitions>
+        <select>
+          <node alias="@histoName" analyze="false" expr="@histoName"/>
+          <node alias="@type" analyze="false" expr="@type"/>
+          <node alias="@withParams" analyze="false" expr="@withParams"/>
+          <node alias="@category" analyze="false" expr="@category"/>
+          <node alias="@label" analyze="false" expr="@label"/>
+          <node alias="@source" analyze="false" expr="@source"/>
+          <node alias="@validity" analyze="false" expr="@validity"/>
+          <node alias="@occurrence" analyze="false" expr="@occurrence"/>
+          <node alias="@deliveryId" analyze="false" expr="[nmsDelivery/@id]"/>
+          <node alias="@tagId" analyze="false" expr="@tagId"/>
+        </select>
+        <outputFilter id="1557663000">
+          <condition expr="[nmsDelivery/@id] &lt;> 0" internalId="1557662999"/>
+        </outputFilter>
+        <links cardinality="1" name="nmsDelivery" schema="nms:delivery">
+          <condition dstExpr="@internalName" srcExpr="@histoName"/>
+        </links>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="false" label="Delivery folder" mainSet="dedupBlDlv" mask="0" name="enrichBlDlvFolder" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="1096" y="672">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="extractBlDlvFolder"/>
+        </transitions>
+        <select>
+          <node alias="@folderId" analyze="false" expr="[folder/@id]" label="Folder ID"/>
+          <node analyze="false" expr="@histoName" label="Delivery name"/>
+          <node analyze="false" expr="@templateName" label="Template name"/>
+          <node analyze="false" expr="@label" label="Template label"/>
+          <node analyze="false" expr="@nature" label="Delivery Nature"/>
+          <node analyze="false" expr="@histoLabel" label="Label of the archived delivery"/>
+          <node alias="@validityDate" analyze="false" expr="@validityDate" label="@validityDate"/>
+          <node alias="@messageType" analyze="false" expr="@messageType" label="@messageType"/>
+        </select>
+        <links cardinality="2" label="Folder" name="folder" schema="xtk:folder">
+          <condition dstExpr="@name" srcExpr="@templateName"/>
+        </links>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="true" label="Parent folder" mainSet="dedupBlDlvNewFolder" mask="0" name="enrichBlDlvNewFolderParent" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="1656" y="672">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="writerBlDlvNewFolder"/>
+        </transitions>
+        <select>
+          <node alias="parentFolderId" analyze="false" expr="[folderParent/@id]" label="parent folder ID"/>
+        </select>
+        <links cardinality="1" label="Parent folder" name="folderParent" schema="xtk:folder">
+          <condition dstExpr="@name" srcExpr="'nmsMcTriggerMessagesHisto'"/>
+        </links>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="false" label="Previous deliveries" mainSet="forkBl" mask="0" name="enrichBlOldDlv" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="936" y="832">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="dedupBlOldDlv"/>
+        </transitions>
+        <select>
+          <node analyze="false" expr="@broadLogEventHistoId" label="@broadLogEventHistoId"/>
+        </select>
+        <mainReconc enabled="true" schema="nms:broadLogEventHisto">
+          <condition dstExpr="@id" srcExpr="@broadLogEventHistoId"/>
+        </mainReconc>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="true" label="Delivery folder" mainSet="forkBlDlvFolder" mask="0" name="enrichBlDlvNewFolder" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="1912" y="648">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="unionBlDlvFolder"/>
+        </transitions>
+        <select>
+          <node alias="@folderId" analyze="false" expr="[writerBlDlvNewFolder/@id]" label="Folder ID"/>
+        </select>
+        <links cardinality="1" label="Folder creation" name="writerBlDlvNewFolder" schema="temp:writerBlDlvNewFolder" srcDataSet="writerBlDlvNewFolder">
+          <condition dstExpr="@templateName" srcExpr="@templateName"/>
+        </links>
+      </enrich>
+      <enrich collision="0" img="nms:activities/enrich.png" keepAllExtraData="false" label="Link to the delivery" mainSet="forkBl" mask="0" name="enrichBlDlv" noAutoPkFilter="false" onError="0" runOnSimulation="true" timezone="_inherit_" x="2464" y="768">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="writerBl"/>
+        </transitions>
+        <select>
+          <node alias="@broadLogEventHistoId" analyze="false" expr="@broadLogEventHistoId" label="@broadLogEventHistoId"/>
+          <node alias="@eventHistoId" analyze="false" expr="@eventHistoId" label="@eventHistoId"/>
+          <node alias="@flags" analyze="false" expr="@flags" label="@flags"/>
+          <node alias="@status" analyze="false" expr="@status" label="@status"/>
+          <node alias="@address" analyze="false" expr="@address" label="@address"/>
+          <node alias="@eventDate" analyze="false" expr="@eventDate" label="@eventDate"/>
+          <node alias="@lastModified" analyze="false" expr="@lastModified" label="@lastModified"/>
+          <node alias="@validityDate" analyze="false" expr="@validityDate" label="@validityDate"/>
+          <node analyze="false" expr="@md5" label="@md5 (nmsbroadlogmsg)"/>
+        </select>
+        <mainReconc enabled="false"/>
+        <reconc id="13019995785" label="Delivery reconciliation" name="recDelivery" schema="temp:writerBlDlv" srcDataSet="jsBlDlv">
+          <condition dstExpr="@histoName" srcExpr="@histoName"/>
+        </reconc>
+        <links cardinality="2" label="Delivery message qualification" name="broadLogMsg" schema="nms:broadLogMsg">
+          <condition dstExpr="@md5" srcExpr="@md5"/>
+        </links>
+      </enrich>
+      <union collision="0" img="nms:activities/union.png" label="Union" mainSet="extractTlUrl" mask="0" name="unionTl" onError="0" runOnSimulation="true" timezone="_inherit_" useKeyForReconciliation="0" x="1112" y="1264">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="writerTl"/>
+        </transitions>
+        <joinKeys xpath="@trackingLogHistoId"/>
+      </union>
+      <union collision="0" img="nms:activities/union.png" label="Union" mask="0" name="unionBlDlvFolder" onError="0" runOnSimulation="true" timezone="_inherit_" useKeyForReconciliation="0" x="2032" y="720">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="writerBlDlv"/>
+        </transitions>
+      </union>
+      <extract collision="0" img="nms:activities/piechart.png" label="Tracking URL" mask="0" name="extractTlUrl" onError="0" runOnSimulation="true" schema="temp:enrichTlDlv" timezone="_inherit_" x="832" y="1264">
+        <transitions>
+          <extractOutput enabled="true" label="Open" name="extractOutput" recipientLink="" target="unionTl">
+            <limiter defaultLimit="100" order="false" percent="10" random="false" type="percent"/>
+            <filter enabled="true">
+              <where id="1557663002">
+                <condition expr="@urlId IN (1,2)" internalId="1557663001"/>
+              </where>
+            </filter>
+          </extractOutput>
+          <extractOutput enabled="true" label="Other" name="extractOutput2" recipientLink="" target="enrichTlUrl">
+            <limiter defaultLimit="100" order="false" percent="10" random="false" type="percent"/>
+            <filter enabled="true">
+              <where id="1557663004">
+                <condition expr="@urlId &lt;> 1" internalId="1557663003"/>
+              </where>
+            </filter>
+          </extractOutput>
+          <done enabled="false" label="Result" name="done"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+      </extract>
+      <extract collision="0" img="nms:activities/piechart.png" label="Existing folder?" mask="0" name="extractBlDlvFolder" onError="0" recipientLink="" runOnSimulation="true" schema="temp:enrichBlDlvFolder" timezone="_inherit_" x="1232" y="672">
+        <transitions>
+          <extractOutput enabled="true" label="Existing folder" name="extractOutput" recipientLink="" schema="temp:enrich" target="unionBlDlvFolder">
+            <limiter defaultLimit="100" order="false" percent="10" random="false" type="percent"/>
+            <filter enabled="true">
+              <where filterName="backGroundFilterFrm" id="1557663006">
+                <condition expr="@folderId &lt;> 0" internalId="1557663005"/>
+              </where>
+              <humanCond>Query: folder ID different from 0</humanCond>
+            </filter>
+          </extractOutput>
+          <done enabled="false" label="Result" name="done"/>
+          <remainder enabled="true" label="Non-existent folder" name="remainder" target="forkBlDlvFolder"/>
+        </transitions>
+      </extract>
+      <dedup collision="0" compType="0" img="nms:activities/dedup.png" includeMainInDuplicates="true" keepAllExtraData="true" keepRank="false" label="Deduplication of tracking URLs" mask="0" merge="false" multipleMergeCriteria="false" name="dedupUrl" noAutoPkFilter="false" number="1" onError="0" runOnSimulation="true" schema="temp:enrichUrlDlv" timezone="_inherit_" type="choice" x="712" y="1056">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="writerUrl"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <groupExpr expr="@tagId + '_' + @deliveryId" id="1557663007"/>
+      </dedup>
+      <dedup collision="0" compType="0" img="nms:activities/dedup.png" includeMainInDuplicates="true" keepAllExtraData="true" keepRank="false" label="Delivery folder deduplication" mask="0" merge="false" multipleMergeCriteria="false" name="dedupBlDlvNewFolder" noAutoPkFilter="false" number="1" onError="0" runOnSimulation="true" schema="temp:enrichBlDlvFolder" timezone="_inherit_" type="choice" x="1536" y="672">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="enrichBlDlvNewFolderParent"/>
+          <remainder enabled="false" label="Additional" name="remainder"/>
+        </transitions>
+        <groupExpr expr="@templateName" id="1557663008" label="Template name"/>
+        <display>Deduplication on the 'Template name' field(s) with the 'Choose for me' method</display>
+      </dedup>
+      <dedup collision="0" compType="0" img="nms:activities/dedup.png" includeMainInDuplicates="true" keepAllExtraData="true" keepRank="false" label="Delivery deduplication" mask="0" merge="false" multipleMergeCriteria="false" name="dedupBlDlv" noAutoPkFilter="false" number="1" onError="0" runOnSimulation="true" schema="temp:dbImportRtBl" timezone="_inherit_" type="choice" x="920" y="672">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="enrichBlDlvFolder"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <groupExpr expr="@histoName" id="1557663009"/>
+      </dedup>
+      <dedup collision="0" compType="0" img="nms:activities/dedup.png" includeMainInDuplicates="true" keepAllExtraData="true" keepRank="false" label="Previous delivery" mask="0" merge="false" multipleMergeCriteria="false" name="dedupBlOldDlv" noAutoPkFilter="false" number="1" onError="0" runOnSimulation="true" schema="temp:enrichBlOldDlv" timezone="_inherit_" type="choice" x="1104" y="832">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="jsBlOldDlv"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <groupExpr expr="[target/@delivery-id]" id="1557663010"/>
+      </dedup>
+      <writer collision="0" ignoreTarget="true" img="nms:activities/writer.png" label="Update archived events" mask="0" maxErrorCount="100" name="writerEvent" noPreservation="true" noUpdateLinks="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:eventHisto" timezone="_inherit_" transactionSize="10000" updateAllColumns="true" x="704" y="208">
+        <transitions>
+          <done enabled="true" name="done" target="jsEventsDone"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@id" dstExpr="@id" enabledOperation="all" id="1557663011"/>
+        <node calcExpr="@id" dstExpr="@id" enabledOperation="all" id="1557663012"/>
+        <node calcExpr="0" dstExpr="[@delivery-id]" enabledOperation="all" id="1557663013"/>
+      </writer>
+      <writer collision="0" enabledIf="@md5!=''" ignoreTarget="true" img="nms:activities/writer.png" label="Update message qualifications" mask="0" maxErrorCount="1000" name="writerBlMsg" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:broadLogMsg" timezone="_inherit_" transactionSize="10000" updateAllColumns="true" x="624" y="480">
+        <transitions>
+          <done enabled="true" name="done" target="jsBlMsgDone"/>
+          <remainder enabled="true" label="Rejects" name="remainder" target="endBlMsgRemainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@md5" dstExpr="@md5" enabledOperation="all" id="1557663014"/>
+      </writer>
+      <writer collision="0" enabledIf="@id = 0 or @lastModified >= [target/@lastModified]" img="nms:activities/writer.png" label="Record quarantines" mask="0" maxErrorCount="1000" name="writerQuarantines" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:address" timezone="_inherit_" transactionSize="10000" x="344" y="1552">
+        <transitions>
+          <done enabled="true" name="done" target="end"/>
+          <remainder enabled="true" label="Rejects" name="remainder" target="endQuarantinesRemainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@address" dstExpr="@address" enabledOperation="all" id="1557663015"/>
+        <primaryKeyNode calcExpr="@type" dstExpr="@type" enabledOperation="all" id="1557663016"/>
+        <node calcExpr="@address" dstExpr="@address" enabledOperation="all" id="1557663017"/>
+        <node calcExpr="@consecutiveError" dstExpr="@consecutiveError" enabledOperation="all" id="1557663018"/>
+        <node calcExpr="@created" dstExpr="@created" enabledOperation="all" id="1557663019"/>
+        <node calcExpr="@quarantineReason" dstExpr="@quarantineReason" enabledOperation="all" id="1557663020"/>
+        <node calcExpr="@status" dstExpr="@status" enabledOperation="all" id="1557663021"/>
+        <node calcExpr="@type" dstExpr="@type" enabledOperation="all" id="1557663022"/>
+        <node calcExpr="quarantineText" dstExpr="quarantineText" enabledOperation="all" id="1557663023"/>
+        <node calcExpr="@lastModified" dstExpr="@lastModified" enabledOperation="all" id="1557663024"/>
+        <node calcExpr="@lastErrorDate" dstExpr="@lastErrorDate" enabledOperation="all" id="1557663025"/>
+      </writer>
+      <writer collision="0" ignoreDuplicates="true" ignoreTarget="true" img="nms:activities/writer.png" label="Update tracked URLs" mask="0" maxErrorCount="100" name="writerUrl" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:trackingUrl" timezone="_inherit_" transactionSize="10000" x="864" y="1056">
+        <transitions>
+          <done enabled="true" name="done" target="jsUrlDone"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@tagId + '_' + @deliveryId" dstExpr="@tagId" enabledOperation="all" id="1557663026"/>
+        <node calcExpr="@deliveryId" dstExpr="[@delivery-id]" enabledOperation="all" id="1557663027"/>
+        <node calcExpr="@label" dstExpr="@label" enabledOperation="all" id="1557663028"/>
+        <node calcExpr="@validity" dstExpr="@validity" enabledOperation="all" id="1557663029"/>
+        <node calcExpr="@withParams" dstExpr="@withParams" enabledOperation="all" id="1557663030"/>
+        <node calcExpr="@type" dstExpr="@type" enabledOperation="all" id="1557663031"/>
+        <node calcExpr="@source" dstExpr="@source" enabledOperation="all" id="1557663032"/>
+        <node calcExpr="@category" dstExpr="@category" enabledOperation="all" id="1557663033"/>
+        <node calcExpr="@occurrence" dstExpr="@occurrence" enabledOperation="all" id="1557663034"/>
+        <node calcExpr="@tagId + '_' + @deliveryId" dstExpr="@tagId" enabledOperation="all" id="1557663035"/>
+      </writer>
+      <writer collision="0" img="nms:activities/writer.png" label="Update tracking logs" mask="0" maxErrorCount="100" name="writerTl" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:trackingLogEventHisto" timezone="_inherit_" transactionSize="10000" x="1240" y="1264">
+        <transitions>
+          <done enabled="true" name="done" target="writerWebTl"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@trackingLogHistoId" dstExpr="@id" enabledOperation="all" id="1557663036"/>
+        <node calcExpr="@trackingLogHistoId" dstExpr="@id" enabledOperation="all" id="1557663037"/>
+        <node calcExpr="@broadLogHistoId" dstExpr="[@broadLog-id]" enabledOperation="all" id="1557663038"/>
+        <node calcExpr="@eventHistoId" dstExpr="[@event-id]" enabledOperation="all" id="1557663039"/>
+        <node calcExpr="@deliveryId" dstExpr="[@delivery-id]" enabledOperation="all" id="1557663040"/>
+        <node calcExpr="@logDate" dstExpr="@logDate" enabledOperation="all" id="1557663041"/>
+        <node calcExpr="@externalId" dstExpr="@externalId" enabledOperation="all" id="1557663042"/>
+        <node calcExpr="@userAgent" dstExpr="@userAgent" enabledOperation="all" id="1557663043"/>
+        <node calcExpr="@sourceType" dstExpr="@sourceType" enabledOperation="all" id="1557663044"/>
+        <node calcExpr="@sourceId" dstExpr="@sourceId" enabledOperation="all" id="1557663045"/>
+        <node calcExpr="@urlId" dstExpr="[@url-id]" enabledOperation="all" id="1557663046"/>
+      </writer>
+      <writer collision="0" enabledIf="@webLogId != 0" ignoreTarget="true" img="nms:activities/writer.png" label="Update web tracking logs" mask="0" maxErrorCount="100" name="writerWebTl" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:webTrackingLogEventHisto" timezone="_inherit_" transactionSize="10000" x="1400" y="1264">
+        <initScript>// Flag delivery as dirty to force recompute stats
+var queryDeliveries = xtk.queryDef.create(
+          &lt;queryDef schema="temp:writerTl" operation="select"&gt;
+            &lt;select&gt;
+              &lt;node expr="@deliveryId"/&gt;
+            &lt;/select&gt;
+          &lt;/queryDef&gt;
+        );
+var ndDeliveries = queryDeliveries.ExecuteQuery();
+
+for each( var delivery in ndDeliveries.writerTl )
+{
+  // If the delivery is deleted in the meantime (between the broadlog creation and now), need to be robust
+  try
+  {
+    xtk.session.Write(
+      &lt;delivery id={delivery.@deliveryId} xtkschema="nms:delivery" _operation="update"&gt;
+        &lt;indicators dirty="8"/&gt;
+      &lt;/delivery&gt;
+    );
+  }
+  catch (e)
+  {
+  }
+}</initScript>
+        <transitions>
+          <done enabled="true" name="done" target="jsTlDone"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@trackingLogHistoId" dstExpr="@id" enabledOperation="all" id="1557663047"/>
+        <node calcExpr="@trackingLogHistoId" dstExpr="@id" enabledOperation="all" id="1557663048"/>
+        <node calcExpr="@amount" dstExpr="@amount" enabledOperation="all" id="1557663049"/>
+        <node calcExpr="@article" dstExpr="@article" enabledOperation="all" id="1557663050"/>
+      </writer>
+      <writer collision="0" img="nms:activities/writer.png" label="Update delivery" mask="0" maxErrorCount="100" name="writerBlDlv" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:delivery" timezone="_inherit_" transactionSize="10000" x="2184" y="704">
+        <transitions>
+          <done enabled="true" name="done" target="jsBlDlv"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="0" dstExpr="@deleteStatus" enabledOperation="all" id="1557663051"/>
+        <primaryKeyNode calcExpr="@histoName" dstExpr="@internalName" enabledOperation="all" id="1557663052"/>
+        <node calcExpr="@histoName" dstExpr="@internalName" enabledOperation="all" id="1557663053"/>
+        <node calcExpr="@histoLabel" dstExpr="@label" enabledOperation="all" id="1557663054"/>
+        <node calcExpr="95" dstExpr="@state" enabledOperation="all" id="1557663055" valueLabel="Finished"/>
+        <node calcExpr="[folder/@id]" dstExpr="[@folder-id]" enabledOperation="all" id="1557663056"/>
+        <node calcExpr="$long(vars/@mappingId)" dstExpr="[@mapping-id]" enabledOperation="all" id="1557663057"/>
+        <node calcExpr="@validityDate" dstExpr="[scheduling/@validityDate]" enabledOperation="all" id="1557663058"/>
+        <node calcExpr="1" dstExpr="@deliveryMode" enabledOperation="all" id="1557663059" valueLabel="Bulk delivery"/>
+        <node calcExpr="@messageType" dstExpr="@messageType" enabledOperation="all" id="1557663060"/>
+        <node calcExpr="@nature" dstExpr="@nature" enabledOperation="all" id="1557663061"/>
+      </writer>
+      <writer collision="0" ignoreTarget="true" img="nms:activities/writer.png" label="Update delivery logs" mask="0" maxErrorCount="100" name="writerBl" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="nms:broadLogEventHisto" timezone="_inherit_" transactionSize="10000" x="2616" y="768">
+        <transitions>
+          <done enabled="true" name="done" target="jsBlDone"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@broadLogEventHistoId" dstExpr="@id" enabledOperation="all" id="1557663062"/>
+        <node calcExpr="@broadLogEventHistoId" dstExpr="@id" enabledOperation="all" id="1557663063"/>
+        <node calcExpr="@flags" dstExpr="@flags" enabledOperation="all" id="1557663064"/>
+        <node calcExpr="@status" dstExpr="@status" enabledOperation="all" id="1557663065"/>
+        <node calcExpr="@address" dstExpr="@address" enabledOperation="all" id="1557663066"/>
+        <node calcExpr="Iif($(vars/@updateBlLastModified) = 1, GetDate(), @lastModified)" dstExpr="@lastModified" enabledOperation="all" id="1557663067"/>
+        <node calcExpr="[recDelivery/@id]" dstExpr="[@delivery-id]" enabledOperation="all" id="1557663068"/>
+        <node calcExpr="@eventHistoId" dstExpr="[@event-id]" enabledOperation="all" id="1557663069"/>
+        <node calcExpr="[broadLogMsg/@id]" dstExpr="[@msg-id]" enabledOperation="all" id="1557663070"/>
+        <node calcExpr="@eventDate" dstExpr="@eventDate" enabledOperation="all" id="1557663071"/>
+        <node calcExpr="$long(vars/@cellExtAccount)" dstExpr="[@extAccount-id]" enabledOperation="all" id="1557663072"/>
+      </writer>
+      <writer collision="0" img="nms:activities/writer.png" label="Create delivery folder" mask="0" maxErrorCount="100" name="writerBlDlvNewFolder" noPreservation="true" onError="0" operationType="insertOrUpdate" runOnSimulation="true" schema="xtk:folder" timezone="_inherit_" transactionSize="10000" x="1768" y="672">
+        <transitions>
+          <done enabled="true" name="done" target="enrichBlDlvNewFolder"/>
+          <remainder enabled="false" label="Rejects" name="remainder"/>
+        </transitions>
+        <primaryKeyNode calcExpr="@templateName" dstExpr="@name" enabledOperation="all" id="1557663073"/>
+        <node calcExpr="@templateName" dstExpr="@name" enabledOperation="all" id="1557663074"/>
+        <node calcExpr="@label + ' (' + @templateName + ')'" dstExpr="@label" enabledOperation="all" id="1557663075"/>
+        <node calcExpr="'nmsDelivery'" dstExpr="@model" enabledOperation="all" id="1557663076"/>
+        <node calcExpr="'nms'" dstExpr="[@image-namespace]" enabledOperation="all" id="1557663077"/>
+        <node calcExpr="'campaign.png'" dstExpr="[@image-name]" enabledOperation="all" id="1557663078"/>
+        <node calcExpr="1" dstExpr="@builtIn" enabledOperation="all" id="1557663079"/>
+        <node calcExpr="[folderParent/@id]" dstExpr="[@parent-id]" enabledOperation="all" id="1557663080" valueLabel="Primary key"/>
+        <node calcExpr="[folderParent/@fullName] + @label + ' (' + @templateName + ')/'" dstExpr="@fullName" enabledOperation="all" id="1557663081"/>
+      </writer>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" keepAllExtraData="true" label="Reading RT events" mask="0" name="dbImportRtEvent" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsRtEvent" tableName="dbImportRtEvent" timezone="_inherit_" x="360" y="120">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinEvent"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:rtEvent" name="dbImportRtEvent" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@id" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + @id"/>
+          <node alias="@submit" analyze="false" expr="AddSeconds(@submit, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@scheduled" analyze="false" expr="AddSeconds(@scheduled, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@expiration" analyze="false" expr="AddSeconds(@expiration, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@created" analyze="false" expr="AddSeconds(@created, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@processing" analyze="false" expr="AddSeconds(@processing, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@processed" analyze="false" expr="AddSeconds(@processed, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@lastModified" analyze="false" expr="AddSeconds(@lastModified, $long(vars/@TIME_DIFF_S))"/>
+        </select>
+        <where>
+          <condition boolOperator="AND" expr="@id &lt;> 0" internalId="1557663082"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@lastModified >= $datetime(vars/@dateCurrentStart)" internalId="1557663083"/>
+          <condition expr="@lastModified &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663084"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663085"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" keepAllExtraData="true" label="Reading batch events" mask="0" name="dbImportBatchEvent" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsBatchEvent" tableName="dbImportBatchEvent" timezone="_inherit_" x="352" y="200">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinEvent"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:batchEvent" name="dbImportBatchEvent" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@id" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + @id"/>
+          <node alias="@submit" analyze="false" expr="AddSeconds(@submit, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@scheduled" analyze="false" expr="AddSeconds(@scheduled, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@expiration" analyze="false" expr="AddSeconds(@expiration, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@created" analyze="false" expr="AddSeconds(@created, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@processing" analyze="false" expr="AddSeconds(@processing, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@processed" analyze="false" expr="AddSeconds(@processed, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@lastModified" analyze="false" expr="AddSeconds(@lastModified, $long(vars/@TIME_DIFF_S))"/>
+        </select>
+        <where>
+          <condition boolOperator="AND" expr="@id &lt;> 0" internalId="1557663086"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@lastModified >= $datetime(vars/@dateCurrentStart)" internalId="1557663087"/>
+          <condition expr="@lastModified &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663088"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663089"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" label="Reading delivery message qualifications" mask="0" name="dbImportBlMsg" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsBroadLogMsg" tableName="dbImportBlMsg" timezone="_inherit_" x="304" y="432">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinBlMsg"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:broadLogMsg" name="dbImportBlMsg" namespace="temp"/>
+        </extension>
+        <select>
+          <node analyze="false" expr="@count"/>
+          <node analyze="false" expr="@failureReason"/>
+          <node analyze="false" expr="@failureType"/>
+          <node analyze="false" expr="@qualifStatus"/>
+          <node analyze="false" expr="@firstAddress"/>
+          <node analyze="false" expr="@firstText"/>
+          <node analyze="false" expr="@md5"/>
+          <node analyze="false" expr="@text"/>
+          <node alias="@created" analyze="false" expr="AddSeconds(@created, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@lastModified" analyze="false" expr="AddSeconds(@lastModified, $long(vars/@TIME_DIFF_S))"/>
+        </select>
+        <where>
+          <condition enabledIf="$long(vars/@extAccountId)=0" expr="1=0" internalId="1557663090"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@lastModified >= $datetime(vars/@dateCurrentStart)" internalId="1557663091"/>
+          <condition expr="@lastModified &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663092"/>
+          <condition expr="@id &lt;> 0" internalId="1557663093"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" label="Reading the RT delivery logs" mask="0" name="dbImportRtBl" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsBroadLogRtEvent" tableName="dbImportRtBl" timezone="_inherit_" x="360" y="648">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinBl"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" name="default" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:broadLogRtEvent" name="dbImportRtBl" namespace="temp"/>
+          <schema extendedSchema="nms:delivery" name="delivery" namespace="temp"/>
+          <schema extendedSchema="nms:broadLogMsg" name="broadLogMsg" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="nmsDelivery" schema="temp:delivery">
+          <condition dstExpr="@id" srcExpr="[@delivery-id]"/>
+        </links>
+        <links cardinality="1" name="nmsBroadLogMsg" schema="temp:broadLogMsg">
+          <condition dstExpr="@id" srcExpr="[@msg-id]"/>
+        </links>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[nmsDelivery/@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@broadLogEventHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + @id"/>
+          <node alias="@histoName" analyze="false" expr="ToDate(TruncWeek(@eventDate)) + '_' + [nmsDelivery/@deliveryCode]"/>
+          <node alias="@histoLabel" analyze="false" expr="[nmsDelivery/@label] + ' (' + ToDate(TruncWeek(@eventDate)) + ')'"/>
+          <node alias="@label" analyze="false" expr="[nmsDelivery/@label]"/>
+          <node alias="@nature" analyze="false" expr="[nmsDelivery/@nature]"/>
+          <node alias="@eventHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + [@rtEvent-id]"/>
+          <node alias="@templateName" analyze="false" expr="[nmsDelivery/@deliveryCode]"/>
+          <node alias="@validityDate" analyze="false" expr="AddSeconds([nmsDelivery/scheduling/@validityDate], $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@messageType" analyze="false" expr="[nmsDelivery/@messageType]"/>
+          <node alias="@md5" analyze="false" expr="[nmsBroadLogMsg/@md5]"/>
+          <node alias="@flags" analyze="false" expr="@flags"/>
+          <node alias="@status" analyze="false" expr="@status"/>
+          <node alias="@address" analyze="false" expr="@address"/>
+          <node alias="@lastModified" analyze="false" expr="AddSeconds(@lastModified, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@eventDate" analyze="false" expr="AddSeconds(@eventDate, $long(vars/@TIME_DIFF_S))"/>
+        </select>
+        <where>
+          <condition boolOperator="AND" expr="@id &lt;> 0" internalId="1557663094"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@lastModified >= $datetime(vars/@dateCurrentStart)" internalId="1557663095"/>
+          <condition expr="@lastModified &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663096"/>
+          <condition expr="[nmsDelivery/@FCP] = 0" internalId="1557663097"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663098"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" label="Reading the batch delivery logs" mask="0" name="dbImportBatchBl" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsBroadLogBatchEvent" tableName="dbImportBatchBl" timezone="_inherit_" x="352" y="736">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinBl"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" name="default" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:broadLogBatchEvent" name="dbImportBatchBl" namespace="temp"/>
+          <schema extendedSchema="nms:delivery" name="delivery" namespace="temp"/>
+          <schema extendedSchema="nms:broadLogMsg" name="broadLogMsg" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="nmsDelivery" schema="temp:delivery">
+          <condition dstExpr="@id" srcExpr="[@delivery-id]"/>
+        </links>
+        <links cardinality="1" name="nmsBroadLogMsg" schema="temp:broadLogMsg">
+          <condition dstExpr="@id" srcExpr="[@msg-id]"/>
+        </links>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[nmsDelivery/@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@broadLogEventHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + @id"/>
+          <node alias="@histoName" analyze="false" expr="ToDate(TruncWeek(@eventDate)) + '_' + [nmsDelivery/@deliveryCode]"/>
+          <node alias="@histoLabel" analyze="false" expr="[nmsDelivery/@label] + ' (' + ToDate(TruncWeek(@eventDate)) + ')'"/>
+          <node alias="@label" analyze="false" expr="[nmsDelivery/@label]"/>
+          <node alias="@nature" analyze="false" expr="[nmsDelivery/@nature]"/>
+          <node alias="@eventHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + [@batchEvent-id]"/>
+          <node alias="@templateName" analyze="false" expr="[nmsDelivery/@deliveryCode]"/>
+          <node alias="@validityDate" analyze="false" expr="AddSeconds([nmsDelivery/scheduling/@validityDate], $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@messageType" analyze="false" expr="[nmsDelivery/@messageType]"/>
+          <node alias="@md5" analyze="false" expr="[nmsBroadLogMsg/@md5]"/>
+          <node alias="@flags" analyze="false" expr="@flags"/>
+          <node alias="@status" analyze="false" expr="@status"/>
+          <node alias="@address" analyze="false" expr="@address"/>
+          <node alias="@lastModified" analyze="false" expr="AddSeconds(@lastModified, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@eventDate" analyze="false" expr="AddSeconds(@eventDate, $long(vars/@TIME_DIFF_S))"/>
+        </select>
+        <where>
+          <condition boolOperator="AND" expr="@id &lt;> 0" internalId="1557663099"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@lastModified >= $datetime(vars/@dateCurrentStart)" internalId="1557663100"/>
+          <condition expr="@lastModified &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663101"/>
+          <condition expr="[nmsDelivery/@FCP] = 0" internalId="1557663102"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663103"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" label="Reading tracking URLs" mask="0" name="dbImportUrl" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsTrackingUrl" tableName="dbImportUrl" timezone="_inherit_" x="304" y="1008">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinUrl"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" name="default" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:trackingUrl" name="dbImportUrl" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="nmsDelivery" schema="temp:delivery">
+          <condition dstExpr="@id" srcExpr="[@delivery-id]"/>
+        </links>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[nmsDelivery/@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@histoName" analyze="false" expr="ToDate(TruncWeek(GetDate())) + '_' + [nmsDelivery/@deliveryCode]"/>
+          <node alias="@label" analyze="false" expr="@label"/>
+          <node alias="@source" analyze="false" expr="@source"/>
+          <node alias="@category" analyze="false" expr="@category"/>
+          <node alias="@withParams" analyze="false" expr="@withParams"/>
+          <node alias="@type" analyze="false" expr="@type"/>
+          <node alias="@validity" analyze="false" expr="@validity"/>
+          <node alias="@occurrence" analyze="false" expr="@occurrence"/>
+          <node alias="@tagId" analyze="false" expr="'rt' + $(vars/@cellId) + '_' + @tagId"/>
+        </select>
+        <where>
+          <condition expr="[@delivery-id] &lt;> 0" internalId="1557663104"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="[nmsDelivery/@lastModified] >= $datetime(vars/@dateCurrentStart)" internalId="1557663105"/>
+          <condition expr="[nmsDelivery/@lastModified] &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663106"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663107"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" label="Reading the RT tracking logs" mask="0" name="dbImportRtTl" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsTrackingLogRtEvent" tableName="dbImportRtTl" timezone="_inherit_" x="360" y="1184">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinTl"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" name="default" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:trackingUrl" name="trackingUrl" namespace="temp"/>
+          <schema extendedSchema="nms:trackingLogRtEvent" name="dbImportRtTl" namespace="temp"/>
+          <schema extendedSchema="nms:webTrackingLog" name="webTrackingLog" namespace="temp"/>
+          <schema extendedSchema="nms:delivery" name="delivery" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="nmsTrackingUrl" schema="temp:trackingUrl">
+          <condition dstExpr="@id" srcExpr="[@url-id]"/>
+        </links>
+        <links cardinality="2" name="nmsWebTrackingLog" schema="temp:webTrackingLog">
+          <condition dstExpr="@id" srcExpr="@id"/>
+        </links>
+        <links cardinality="1" name="nmsDelivery" schema="temp:delivery">
+          <condition dstExpr="@id" srcExpr="[@delivery-id]"/>
+        </links>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[nmsDelivery/@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@eventHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + [@rtEvent-id]"/>
+          <node alias="@trackingLogHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + @id"/>
+          <node alias="@broadLogHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + [@broadLog-id]"/>
+          <node alias="@logDate" analyze="false" expr="AddSeconds(@logDate, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@sourceType" analyze="false" expr="@sourceType"/>
+          <node alias="@sourceId" analyze="false" expr="@sourceId"/>
+          <node alias="@externalId" analyze="false" expr="@externalId"/>
+          <node alias="@userAgent" analyze="false" expr="@userAgent"/>
+          <node alias="@urlId" analyze="false" expr="[@url-id]"/>
+          <node alias="@tagId" analyze="false" expr="'rt' + $(vars/@cellId) + '_' + [nmsTrackingUrl/@tagId]"/>
+          <node alias="@amount" analyze="false" expr="[nmsWebTrackingLog/@amount]"/>
+          <node alias="@article" analyze="false" expr="[nmsWebTrackingLog/@article]"/>
+          <node alias="@webLogId" analyze="false" expr="[nmsWebTrackingLog/@id]"/>
+        </select>
+        <where>
+          <condition boolOperator="AND" expr="@id &lt;> 0" internalId="1557663108"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@logDate >= $datetime(vars/@dateCurrentStart)" internalId="1557663109"/>
+          <condition expr="@logDate &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663110"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663111"/>
+        </where>
+      </dbImport>
+      <dbImport collision="0" img="nms:activities/dbImport.png" importType="1" inline="2" label="Reading batch tracking logs" mask="0" name="dbImportBatchTl" noAutoPk="true" noAutoPkFilter="false" onError="0" runOnSimulation="true" runOnce="true" script="NmsTrackingLogBatchEvent" tableName="dbImportBatchTl" timezone="_inherit_" x="344" y="1256">
+        <initScript>if( vars.FDAExtAccountId != 0 )
+{
+  activity.inline = 0;
+  activity.dataSource_id = vars.FDAExtAccountId;
+}
+else
+{
+  activity.inline = 2;
+  activity.dataSourceDesc.name = "default";
+}</initScript>
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinTl"/>
+        </transitions>
+        <dataSourceDesc maxRetries="2" name="default" provider="Oracle"/>
+        <extension>
+          <schema extendedSchema="nms:trackingUrl" name="trackingUrl" namespace="temp"/>
+          <schema extendedSchema="nms:trackingLogBatchEvent" name="dbImportBatchTl" namespace="temp"/>
+          <schema extendedSchema="nms:webTrackingLog" name="webTrackingLog" namespace="temp"/>
+          <schema extendedSchema="nms:delivery" name="delivery" namespace="temp"/>
+          <schema extendedSchema="xtk:folder" name="folder" namespace="temp"/>
+        </extension>
+        <links cardinality="1" name="nmsTrackingUrl" schema="temp:trackingUrl">
+          <condition dstExpr="@id" srcExpr="[@url-id]"/>
+        </links>
+        <links cardinality="2" name="nmsWebTrackingLog" schema="temp:webTrackingLog">
+          <condition dstExpr="@id" srcExpr="@id"/>
+        </links>
+        <links cardinality="1" name="nmsDelivery" schema="temp:delivery">
+          <condition dstExpr="@id" srcExpr="[@delivery-id]"/>
+        </links>
+        <links cardinality="1" name="xtkFolder" schema="temp:folder">
+          <condition dstExpr="@id" srcExpr="[nmsDelivery/@folder-id]"/>
+        </links>
+        <select>
+          <node alias="@eventHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + [@batchEvent-id]"/>
+          <node alias="@trackingLogHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + @id"/>
+          <node alias="@broadLogHistoId" analyze="false" expr=" $int64(vars/@CELL_OFFSET)*$long(vars/@cellId) + [@broadLog-id]"/>
+          <node alias="@logDate" analyze="false" expr="AddSeconds(@logDate, $long(vars/@TIME_DIFF_S))"/>
+          <node alias="@sourceType" analyze="false" expr="@sourceType"/>
+          <node alias="@sourceId" analyze="false" expr="@sourceId"/>
+          <node alias="@externalId" analyze="false" expr="@externalId"/>
+          <node alias="@userAgent" analyze="false" expr="@userAgent"/>
+          <node alias="@urlId" analyze="false" expr="[@url-id]"/>
+          <node alias="@tagId" analyze="false" expr="'rt' + $(vars/@cellId) + '_' + [nmsTrackingUrl/@tagId]"/>
+          <node alias="@amount" analyze="false" expr="[nmsWebTrackingLog/@amount]"/>
+          <node alias="@article" analyze="false" expr="[nmsWebTrackingLog/@article]"/>
+          <node alias="@webLogId" analyze="false" expr="[nmsWebTrackingLog/@id]"/>
+        </select>
+        <where>
+          <condition boolOperator="AND" expr="@id &lt;> 0" internalId="1557663112"/>
+          <condition enabledIf="$(vars/@dateCurrentStart)!=''" expr="@logDate >= $datetime(vars/@dateCurrentStart)" internalId="1557663113"/>
+          <condition expr="@logDate &lt; $datetime(vars/@dateCurrentEnd)" internalId="1557663114"/>
+          <condition expr="[xtkFolder/@fullName] LIKE ($(vars/@homeDir) + '%')" internalId="1557663115"/>
+        </where>
+      </dbImport>
+      <soapImport callName="ExecuteQuery" collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading RT events" mask="0" maxErrorCount="100" name="soapImportRtEvent" onError="0" runOnSimulation="true" runOnce="true" serviceName="XtkQueryDef" timezone="_inherit_" x="392" y="272">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinEvent"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;rtEvent-collection&gt;
+ &lt;rtEvent&gt;
+&lt;data/&gt;
+&lt;/rtEvent&gt;
+&lt;/rtEvent-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="rtEvent" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <sampleLines codepage="0">
+            <line id="1557663116">&lt;?xml version='1.0'?&gt;
+&lt;rtEvent-collection&gt;
+  &lt;rtEvent&gt;
+    &lt;data/&gt;
+  &lt;/rtEvent&gt;
+&lt;/rtEvent-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;
+
+// Build output columns from schema
+var eventSchema = Application.getSchema("nms:rtEvent");
+var eventSchemaRoot = eventSchema.root;
+var eventHistoSchema = Application.getSchema("nms:eventHisto");
+var eventHistoSchemaRoot = eventHistoSchema.root;
+var queryDefSelect = &lt;select /&gt;;
+var eventHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + @id";
+queryDefSelect.appendChild(&lt;node alias="@id" expr={eventHistoIdExpr}/&gt;);
+queryDefSelect.appendChild(&lt;node alias="@id32" expr="@id"/&gt;);
+
+buildSelectFromNode(eventSchemaRoot, queryDefSelect);
+
+var eDataSourceConfig = buildDataSourceConfigFromNode(eventHistoSchemaRoot);
+activity.dataSourceConfig.dataSourceColumn.removeAll();
+for each( var dataSourceColumn in eDataSourceConfig.dataSourceColumn )
+{
+  activity.dataSourceConfig.dataSourceColumn.add(dataSourceColumn);
+}
+document.queryDefSelect = queryDefSelect;
+document.iPointerId = 0;</soapInit>
+        <soapCall>var queryDef =
+  &lt;queryDef schema="nms:rtEvent" operation="select" lineCount="500" unExpandMemoData="true"&gt;
+    {document.queryDefSelect}
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@lastModified,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr={"@lastModified &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@lastModified, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@lastModified, 1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id32);
+document.tsPointerDate = parseTimeStamp(lastRow.@lastModified);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+        <extension>
+          <schema extendedSchema="nms:eventHisto" name="soapImportRtEvent" namespace="temp"/>
+        </extension>
+      </soapImport>
+      <soapImport callName="ExecuteQuery" collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading batch events" mask="0" maxErrorCount="100" name="soapImportBatchEvent" onError="0" runOnSimulation="true" runOnce="true" serviceName="XtkQueryDef" timezone="_inherit_" x="424" y="344">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinEvent"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;batchEvent-collection&gt;
+ &lt;batchEvent&gt;
+&lt;data/&gt;
+&lt;/batchEvent&gt;
+&lt;/batchEvent-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@status" name="@status" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@retry" name="@retry" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@submit" name="@submit" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@scheduled" name="@scheduled" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@expiration" name="@expiration" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@created" name="@created" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@processing" name="@processing" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@processed" name="@processed" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@lastModified" name="@lastModified" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@type" name="@type" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="64"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@delivery-id" name="@delivery-id" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@wishedChannel" name="@wishedChannel" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@externalId" name="@externalId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="64"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@mLineId" name="@mLineId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@origin" name="@origin" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="64"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@email" name="@email" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@emailFormat" name="@emailFormat" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@mobilePhone" name="@mobilePhone" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="32"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@registrationToken" name="@registrationToken" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="256"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@mobileApp-id" name="@mobileApp-id" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line1" name="postalAddress/@line1" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line2" name="postalAddress/@line2" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line3" name="postalAddress/@line3" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line4" name="postalAddress/@line4" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line5" name="postalAddress/@line5" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line6" name="postalAddress/@line6" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@line7" name="postalAddress/@line7" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="80"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@countryCode" name="@countryCode" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="2"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@language" name="@language" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="32"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@createdBy-id" name="@createdBy-id" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@id" name="@id" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="data" name="data" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="memo" typeXform="string"/>
+          <sampleLines codepage="0">
+            <line id="1557663117">&lt;?xml version='1.0'?&gt;
+&lt;batchEvent-collection&gt;
+  &lt;batchEvent&gt;
+    &lt;data/&gt;
+  &lt;/batchEvent&gt;
+&lt;/batchEvent-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;
+
+// Build output columns from schema
+var eventSchema = Application.getSchema("nms:batchEvent");
+var eventSchemaRoot = eventSchema.root;
+var eventHistoSchema = Application.getSchema("nms:eventHisto");
+var eventHistoSchemaRoot = eventHistoSchema.root;
+var queryDefSelect = &lt;select /&gt;;
+var eventHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + @id";
+queryDefSelect.appendChild(&lt;node alias="@id" expr={eventHistoIdExpr}/&gt;);
+queryDefSelect.appendChild(&lt;node alias="@id32" expr="@id"/&gt;);
+
+buildSelectFromNode(eventSchemaRoot, queryDefSelect);
+
+var eDataSourceConfig = buildDataSourceConfigFromNode(eventHistoSchemaRoot);
+activity.dataSourceConfig.dataSourceColumn.removeAll();
+for each( var dataSourceColumn in eDataSourceConfig.dataSourceColumn )
+{
+  activity.dataSourceConfig.dataSourceColumn.add(dataSourceColumn);
+}
+document.queryDefSelect = queryDefSelect;
+document.iPointerId = 0;</soapInit>
+        <soapCall>var queryDef =
+  &lt;queryDef schema="nms:batchEvent" operation="select" lineCount="500" unExpandMemoData="true"&gt;
+    {document.queryDefSelect}
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@lastModified,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr={"@lastModified &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@lastModified, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@lastModified, 1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id32);
+document.tsPointerDate = parseTimeStamp(lastRow.@lastModified);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+        <extension>
+          <schema extendedSchema="nms:eventHisto" name="soapImportBatchEvent" namespace="temp"/>
+        </extension>
+      </soapImport>
+      <soapImport collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading delivery message qualifications" mask="0" maxErrorCount="100" name="soapImportBlMsg" onError="0" runOnSimulation="true" runOnce="true" timezone="_inherit_" x="344" y="520">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinBlMsg"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;broadLogMsg-collection&gt;
+ &lt;broadLogMsg/&gt;
+&lt;/broadLogMsg-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="broadLogMsg" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@count" name="@count" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@failureReason" name="@failureReason" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@failureType" name="@failureType" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@qualifStatus" name="@qualifStatus" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@firstAddress" name="@firstAddress" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="192"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@firstText" name="@firstText" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="512"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@md5" name="@md5" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="32"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@text" name="@text" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="512"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@created" name="@created" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@lastModified" name="@lastModified" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <sampleLines codepage="0">
+            <line id="1557663118">&lt;?xml version='1.0'?&gt;
+&lt;broadLogMsg-collection&gt;
+  &lt;broadLogMsg/&gt;
+&lt;/broadLogMsg-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+document.iPointerId = 0;
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;</soapInit>
+        <soapCall>var queryDef =
+  &lt;queryDef schema="nms:broadLogMsg" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node expr="@id"/&gt;
+      &lt;node expr="@count"/&gt;
+      &lt;node expr="@failureReason"/&gt;
+      &lt;node expr="@failureType"/&gt;
+      &lt;node expr="@qualifStatus"/&gt;
+      &lt;node expr="@firstAddress"/&gt;
+      &lt;node expr="@firstText"/&gt;
+      &lt;node expr="@md5"/&gt;
+      &lt;node expr="@text"/&gt;
+      &lt;node expr="@created"/&gt;
+      &lt;node expr="@lastModified"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@lastModified,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr={"@lastModified &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@lastModified, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@lastModified, 1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id);
+document.tsPointerDate = parseTimeStamp(lastRow.@lastModified);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+      <soapImport callName="ExecuteQuery" collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading the RT delivery logs" mask="0" maxErrorCount="100" name="soapImportRtBl" onError="0" runOnSimulation="true" runOnce="true" serviceName="XtkQueryDef" timezone="_inherit_" x="392" y="824">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinBl"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;broadLogRtEvent-collection&gt;
+ &lt;broadLogRtEvent&gt;
+&lt;data/&gt;
+&lt;/broadLogRtEvent&gt;
+&lt;/broadLogRtEvent-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="broadLogRtEvent" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@broadlogId" name="@broadlogId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@eventHistoId" name="@eventHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@broadLogEventHistoId" name="@broadLogEventHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@histoName" name="@histoName" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="100"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@templateName" name="@templateName" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@label" name="@label" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@histoLabel" name="@histoLabel" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@nature" name="@nature" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@md5" name="@md5" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="32"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@flags" name="@flags" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@status" name="@status" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@address" name="@address" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="512"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@deliveryId" name="@deliveryId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@messageType" name="@messageType" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@validityDate" name="@validityDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@lastModified" name="@lastModified" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@eventDate" name="@eventDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <sampleLines codepage="0">
+            <line id="1557663119">&lt;?xml version='1.0'?&gt;
+&lt;broadLogRtEvent-collection&gt;
+  &lt;broadLogRtEvent&gt;
+    &lt;data/&gt;
+  &lt;/broadLogRtEvent&gt;
+&lt;/broadLogRtEvent-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+document.iPointerId = 0;
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;</soapInit>
+        <soapCall>var eventHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + [@rtEvent-id]";
+var broadlogHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + @id";
+
+var queryDef =
+  &lt;queryDef schema="nms:broadLogRtEvent" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node alias="@eventHistoId" expr={eventHistoIdExpr}/&gt;
+      &lt;node alias="@broadLogEventHistoId" expr={broadlogHistoIdExpr}/&gt;
+      &lt;node alias="@histoName" expr="ToDate(TruncWeek(@eventDate)) + '_' + [delivery/@deliveryCode]"/&gt;
+      &lt;node alias="@histoLabel" expr="[delivery/@label] + ' (' + ToDate(TruncWeek(@eventDate)) + ')'"/&gt;
+      &lt;node alias="@label" expr="[delivery/@label]"/&gt;
+      &lt;node alias="@validityDate" expr="[delivery/scheduling/@validityDate]"/&gt;
+      &lt;node alias="@templateName" expr="[delivery/@deliveryCode]"/&gt;
+      &lt;node alias="@messageType" expr="[delivery/@messageType]"/&gt;
+      &lt;node alias="@nature" expr="[delivery/@nature]"/&gt;
+      &lt;node alias="@md5" expr="[msg/@md5]"/&gt;
+      &lt;node expr="@flags"/&gt;
+      &lt;node expr="@status"/&gt;
+      &lt;node expr="@address"/&gt;
+      &lt;node alias="@lastModified" expr="@lastModified"/&gt;
+      &lt;node expr="@eventDate"/&gt;
+      &lt;node alias="@deliveryId" expr="[@delivery-id]"/&gt;
+      &lt;node alias="@broadlogId" expr="@id"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@lastModified,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr="[delivery/@FCP] = 0"/&gt;
+      &lt;condition expr={"@lastModified &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@lastModified, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@lastModified,1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id);
+document.tsPointerDate = parseTimeStamp(lastRow.@lastModified);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+      <soapImport callName="ExecuteQuery" collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading the batch delivery logs" mask="0" maxErrorCount="100" name="soapImportBatchBl" onError="0" runOnSimulation="true" runOnce="true" serviceName="XtkQueryDef" timezone="_inherit_" x="448" y="896">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinBl"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;broadLogBatchEvent-collection&gt;
+ &lt;broadLogBatchEvent&gt;
+&lt;data/&gt;
+&lt;/broadLogBatchEvent&gt;
+&lt;/broadLogBatchEvent-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="broadLogBatchEvent" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@broadlogId" name="@broadlogId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@eventHistoId" name="@eventHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@broadLogEventHistoId" name="@broadLogEventHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@histoName" name="@histoName" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="100"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@templateName" name="@templateName" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@label" name="@label" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@histoLabel" name="@histoLabel" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@nature" name="@nature" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="128"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@md5" name="@md5" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="32"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@flags" name="@flags" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@status" name="@status" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@address" name="@address" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="512"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@deliveryId" name="@deliveryId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@messageType" name="@messageType" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@validityDate" name="@validityDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@lastModified" name="@lastModified" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@eventDate" name="@eventDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <sampleLines codepage="0">
+            <line id="1557663120">&lt;?xml version='1.0'?&gt;
+&lt;broadLogBatchEvent-collection&gt;
+  &lt;broadLogBatchEvent&gt;
+    &lt;data/&gt;
+  &lt;/broadLogBatchEvent&gt;
+&lt;/broadLogBatchEvent-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+document.iPointerId = 0;
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;</soapInit>
+        <soapCall>var eventHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + [@batchEvent-id]";
+var broadlogHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + @id";
+
+var queryDef =
+  &lt;queryDef schema="nms:broadLogBatchEvent" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node alias="@eventHistoId" expr={eventHistoIdExpr}/&gt;
+      &lt;node alias="@broadLogEventHistoId" expr={broadlogHistoIdExpr}/&gt;
+      &lt;node alias="@histoName" expr="ToDate(TruncWeek(@eventDate)) + '_' + [delivery/@deliveryCode]"/&gt;
+      &lt;node alias="@histoLabel" expr="[delivery/@label] + ' (' + ToDate(TruncWeek(@eventDate)) + ')'"/&gt;
+      &lt;node alias="@label" expr="[delivery/@label]"/&gt;
+      &lt;node alias="@validityDate" expr="[delivery/scheduling/@validityDate]"/&gt;
+      &lt;node alias="@templateName" expr="[delivery/@deliveryCode]"/&gt;
+      &lt;node alias="@messageType" expr="[delivery/@messageType]"/&gt;
+      &lt;node alias="@md5" expr="[msg/@md5]"/&gt;
+      &lt;node alias="@nature" expr="[delivery/@nature]"/&gt;
+      &lt;node expr="@flags"/&gt;
+      &lt;node expr="@status"/&gt;
+      &lt;node expr="@address"/&gt;
+      &lt;node alias="@lastModified" expr="@lastModified"/&gt;
+      &lt;node expr="@eventDate"/&gt;
+      &lt;node alias="@deliveryId" expr="[@delivery-id]"/&gt;
+      &lt;node alias="@broadlogId" expr="@id"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@lastModified,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr="[delivery/@FCP] = 0"/&gt;
+      &lt;condition expr={"@lastModified &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@lastModified, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@lastModified,1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@lastModified &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id);
+document.tsPointerDate = parseTimeStamp(lastRow.@lastModified);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+      <soapImport collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading tracking URLs" mask="0" maxErrorCount="100" name="soapImportUrl" onError="0" runOnSimulation="true" runOnce="true" timezone="_inherit_" x="296" y="1096">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinUrl"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;trackingUrl-collection&gt;
+ &lt;trackingUrl/&gt;
+&lt;/trackingUrl-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="trackingUrl" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@trackingUrlId" name="@trackingUrlId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@tagId" name="@tagId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@histoName" name="@histoName" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@label" name="@label" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@source" name="@source" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="1000"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@category" name="@category" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="100"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@withParams" name="@withParams" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@type" name="@type" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@occurrence" name="@occurrence" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="short" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@validity" name="@validity" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <sampleLines codepage="0">
+            <line id="1557663121">&lt;?xml version='1.0'?&gt;
+&lt;trackingUrl-collection&gt;
+  &lt;trackingUrl/&gt;
+&lt;/trackingUrl-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var logon = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+vars.homeDir = String(logon.sessionInfo.userInfo.@homeDir);
+document.cnx.addTokens(logon["sessionToken"], logon["securityToken"]);
+
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;
+
+var sPointerDlvId = "";
+document.aDeliveryIds = [];
+
+// retrieve list of delivery ID
+var queryDefIdsModel =
+  &lt;queryDef schema="nms:delivery" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &lt;&gt; 0"/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;
+if( document.tsPointerDate )
+{
+  queryDefIdsModel.where.appendChild(&lt;condition expr={"TruncDate(@lastModified, 1) &gt;= TruncDate(" + NL.XTK.toXTKString(document.tsPointerDate) + ", 1)"}/&gt;);
+}
+
+var soapIdsResult;
+do {
+  var queryDefIds = queryDefIdsModel;
+  if( sPointerDlvId != "" )
+  {
+    var sConditionPointerDlv = &lt;condition expr={"@id &gt; " + sPointerDlvId}/&gt;
+    queryDefIds.where.appendChild(sConditionPointerDlv);
+  }
+  try
+  {
+    soapIdsResult = document.soapSrv.ExecuteQuery("", queryDefIds);
+  }
+  catch(e)
+  {
+    logError(sg.synchUrlsLoadDeliveryIdError(e));
+  }
+  if( soapIdsResult.*.length() &gt; 0 )
+  {
+    // Extract ids
+    var sIds = "";
+    for each (var delivery in soapIdsResult.delivery)
+    {
+      if( sIds != "" )
+        sIds += ","
+      sIds += delivery.@id
+    }
+    var lastRow = soapIdsResult.children()[soapIdsResult.*.length()-1];
+    sPointerDlvId = String(lastRow.@id);
+    // push to array
+    document.aDeliveryIds.push(sIds);
+  }
+}
+while( soapIdsResult.*.length() &gt; 0 )
+document.iPointerId = 0;</soapInit>
+        <soapCall>if( document.aDeliveryIds.length == 0 )
+  return null;
+var tagIdExpr = "'rt" + vars.cellId + "_' + @tagId";
+var queryDef =
+  &lt;queryDef schema="nms:trackingUrl" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node alias="@histoName" expr="ToDate(TruncWeek(GetDate())) + '_' + [delivery/@deliveryCode]"/&gt;
+      &lt;node expr="@label"/&gt;
+      &lt;node expr="@source"/&gt;
+      &lt;node expr="@category"/&gt;
+      &lt;node alias="@withParams" expr="@withParams"/&gt;
+      &lt;node expr="@type"/&gt;
+      &lt;node expr="@validity"/&gt;
+      &lt;node expr="@occurrence"/&gt;
+      &lt;node alias="@trackingUrlId" expr="@id"/&gt;
+      &lt;node alias="@tagId" expr={tagIdExpr}/&gt;
+      &lt;node alias="@dlvLastModified" expr="[delivery/@lastModified]"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr={"[delivery/folder/@fullName] LIKE '" + NL.XTK.escapeForLikeCond(vars.homeDir) + "%'"}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.iPointerId )
+{
+  queryDef.where.appendChild(&lt;condition expr={"@id &gt; " + document.iPointerId}/&gt;);
+}
+// Oracle limitation, separate the deliveryIds into multiple groups
+var conditionIn = &lt;condition&gt;&lt;/condition&gt;;
+
+for( i=0; i &lt; document.aDeliveryIds.length; i++)
+{
+  var sIds = document.aDeliveryIds[i];
+  conditionIn.appendChild(&lt;condition boolOperator="OR" expr={"[@delivery-id] IN (" + sIds + ")"}/&gt;);
+}
+
+queryDef.where.appendChild(conditionIn);
+
+            var soapResult = undefined;
+            try
+            {
+            soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+            }
+            catch(e)
+            {
+            logError(e);
+            }
+
+            if( soapResult == undefined )
+            {
+            var sg = new StringGroup("nms:messageCenter");
+            logError(sg.soapEmptyResponse(vars.url));
+            }
+
+            if( soapResult.*.length()==0 )
+            return null;
+
+            var lastRow = soapResult.children()[soapResult.*.length()-1];
+            document.iPointerId = String(lastRow.@trackingUrlId);
+
+            return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+      <soapImport callName="ExecuteQuery" collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading the RT tracking logs" mask="0" maxErrorCount="100" name="soapImportRtTl" onError="0" runOnSimulation="true" runOnce="true" serviceName="XtkQueryDef" timezone="_inherit_" x="416" y="1336">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinTl"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;trackingLogRtEvent-collection&gt;
+ &lt;trackingLogRtEvent&gt;
+&lt;data/&gt;
+&lt;/trackingLogRtEvent&gt;
+&lt;/trackingLogRtEvent-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="trackingLogRtEvent" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@eventHistoId" name="@eventHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@trackingLogHistoId" name="@trackingLogHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@broadLogHistoId" name="@broadLogHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@sourceType" name="@sourceType" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="16"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@sourceId" name="@sourceId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="48"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@externalId" name="@externalId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="48"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@userAgent" name="@userAgent" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@tagId" name="@tagId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@urlId" name="@urlId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@amount" name="@amount" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="double" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@article" name="@article" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@webLogId" name="@webLogId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@logDate" name="@logDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <sampleLines codepage="0">
+            <line id="1557663122">&lt;?xml version='1.0'?&gt;
+&lt;trackingLogRtEvent-collection&gt;
+  &lt;trackingLogRtEvent&gt;
+    &lt;data/&gt;
+  &lt;/trackingLogRtEvent&gt;
+&lt;/trackingLogRtEvent-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+document.iPointerId = 0;
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;</soapInit>
+        <soapCall>var eventHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + [@rtEvent-id]";
+var trackinglogHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + @id";
+var broadlogHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + [@broadLog-id]";
+var tagIdExpr = "'rt" + vars.cellId + "_' + [url/@tagId]";
+
+var queryDef =
+  &lt;queryDef schema="nms:trackingLogRtEvent" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node alias="@eventHistoId" expr={eventHistoIdExpr}/&gt;
+      &lt;node alias="@trackingLogHistoId" expr={trackinglogHistoIdExpr}/&gt;
+      &lt;node alias="@broadLogHistoId" expr={broadlogHistoIdExpr}/&gt;
+      &lt;node alias="@logDate" expr="@logDate"/&gt;
+      &lt;node alias="@sourceType" expr="@sourceType"/&gt;
+      &lt;node alias="@sourceId" expr="@sourceId"/&gt;
+      &lt;node alias="@externalId" expr="@externalId"/&gt;
+      &lt;node alias="@userAgent" expr="@userAgent"/&gt;
+      &lt;node alias="@urlId" expr="[@url-id]"/&gt;
+      &lt;node alias="@tagId" expr={tagIdExpr}/&gt;
+      &lt;node alias="@amount" expr="[webTrackingLog/@amount]"/&gt;
+      &lt;node alias="@article" expr="[webTrackingLog/@article]"/&gt;
+      &lt;node alias="@webLogId" expr="[webTrackingLog/@id]"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@logDate,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr={"@logDate &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@logDate &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@logDate, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@logDate, 1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@logDate &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id);
+document.tsPointerDate = parseTimeStamp(lastRow.@logDate);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+      <soapImport callName="ExecuteQuery" collectLineNumber="false" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading batch tracking logs" mask="0" maxErrorCount="100" name="soapImportBatchTl" onError="0" runOnSimulation="true" runOnce="true" serviceName="XtkQueryDef" timezone="_inherit_" x="456" y="1416">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="orJoinTl"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;trackingLogBatchEvent-collection&gt;
+ &lt;trackingLogBatchEvent&gt;
+&lt;data/&gt;
+&lt;/trackingLogBatchEvent&gt;
+&lt;/trackingLogBatchEvent-collection&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="trackingLogBatchEvent" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@eventHistoId" name="@eventHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@trackingLogHistoId" name="@trackingLogHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@broadLogHistoId" name="@broadLogHistoId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="int64" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@sourceType" name="@sourceType" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="16"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@sourceId" name="@sourceId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="48"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@externalId" name="@externalId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="48"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@userAgent" name="@userAgent" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@tagId" name="@tagId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@urlId" name="@urlId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@amount" name="@amount" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="double" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@article" name="@article" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@webLogId" name="@webLogId" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@logDate" name="@logDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime"/>
+          <sampleLines codepage="0">
+            <line id="1557663123">&lt;?xml version='1.0'?&gt;
+&lt;trackingLogBatchEvent-collection&gt;
+  &lt;trackingLogBatchEvent&gt;
+    &lt;data/&gt;
+  &lt;/trackingLogBatchEvent&gt;
+&lt;/trackingLogBatchEvent-collection&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:xtk:queryDef')
+document.soapSrv.addMethod('ExecuteQuery', 'xtk:queryDef#ExecuteQuery',
+                           ['sessiontoken', 'string','entity', 'NLElement'],
+                           ['pdomOutput', 'NLElement'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);
+document.iPointerId = 0;
+if( vars.dateCurrentStart )
+  document.tsPointerDate = vars.dateCurrentStart;</soapInit>
+        <soapCall>var eventHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + [@batchEvent-id]";
+var trackinglogHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + @id";
+var broadlogHistoIdExpr = vars.CELL_OFFSET + "*" + vars.cellId + " + [@broadLog-id]";
+var tagIdExpr = "'rt" + vars.cellId + "_' + [url/@tagId]";
+
+var queryDef =
+  &lt;queryDef schema="nms:trackingLogBatchEvent" operation="select" lineCount="500"&gt;
+    &lt;select&gt;
+      &lt;node alias="@eventHistoId" expr={eventHistoIdExpr}/&gt;
+      &lt;node alias="@trackingLogHistoId" expr={trackinglogHistoIdExpr}/&gt;
+      &lt;node alias="@broadLogHistoId" expr={broadlogHistoIdExpr}/&gt;
+      &lt;node alias="@logDate" expr="@logDate"/&gt;
+      &lt;node alias="@sourceType" expr="@sourceType"/&gt;
+      &lt;node alias="@sourceId" expr="@sourceId"/&gt;
+      &lt;node alias="@externalId" expr="@externalId"/&gt;
+      &lt;node alias="@userAgent" expr="@userAgent"/&gt;
+      &lt;node alias="@urlId" expr="[@url-id]"/&gt;
+      &lt;node alias="@tagId" expr={tagIdExpr}/&gt;
+      &lt;node alias="@amount" expr="[webTrackingLog/@amount]"/&gt;
+      &lt;node alias="@article" expr="[webTrackingLog/@article]"/&gt;
+      &lt;node alias="@webLogId" expr="[webTrackingLog/@id]"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/select&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="TruncDate(@logDate,1)"/&gt;
+      &lt;node expr="@id"/&gt;
+    &lt;/orderBy&gt;
+    &lt;where&gt;
+      &lt;condition expr="@id &amp;lt;&amp;gt; 0"/&gt;
+      &lt;condition expr={"@logDate &lt; " + NL.XTK.toXTKString(vars.dateCurrentEnd)}/&gt;
+    &lt;/where&gt;
+  &lt;/queryDef&gt;;
+
+if( document.tsPointerDate )
+{
+  if( document.iPointerId )
+  {
+    var strPointerDate = NL.XTK.toXTKString(document.tsPointerDate);
+    queryDef.where.appendChild(&lt;condition expr={"@logDate &gt;= " + strPointerDate}/&gt;); // Useful to help DB use the db index
+    var condition = &lt;condition&gt;&lt;/condition&gt;;
+    condition.appendChild(&lt;condition boolOperator="OR" expr={"TruncDate(@logDate, 1) = TruncDate(" + strPointerDate + ", 1) AND @id &gt; " + document.iPointerId }/&gt;);
+    condition.appendChild(&lt;condition expr={"TruncDate(@logDate, 1) &gt; TruncDate(" + strPointerDate + ", 1)"}/&gt;);
+    queryDef.where.appendChild(condition);
+  }
+  else
+  {
+    queryDef.where.appendChild(&lt;condition expr={"@logDate &gt;= " + NL.XTK.toXTKString(document.tsPointerDate)}/&gt;);
+  }
+}
+
+var soapResult = undefined;
+try
+{
+  soapResult = document.soapSrv.ExecuteQuery("", queryDef);
+}
+catch(e)
+{ 
+  logError(e);
+}
+
+if( soapResult == undefined )
+{
+  var sg = new StringGroup("nms:messageCenter");
+  logError(sg.soapEmptyResponse(vars.url));
+}
+
+if( soapResult.*.length()==0 )
+  return null;
+
+var lastRow = soapResult.children()[soapResult.*.length()-1];
+document.iPointerId = String(lastRow.@id);
+document.tsPointerDate = parseTimeStamp(lastRow.@logDate);
+
+return soapResult;</soapCall>
+        <soapEnd>document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+      <soapImport callName="GetQuarantines" collectLineNumber="true" collectionResult="true" collision="0" img="nms:activities/soapImport.png" label="Reading quarantines" mask="0" maxErrorCount="100" name="soapImportQuarantines" onError="0" runOnSimulation="true" runOnce="true" serviceName="NmsAddress" timezone="_inherit_" x="64" y="1552">
+        <transitions>
+          <result enabled="true" label="Result" name="result" target="enrich"/>
+          <remainder enabled="false" label="Complement" name="remainder"/>
+        </transitions>
+        <sample>&lt;?xml version="1.0"?&gt;
+&lt;GetQuarantinesResponse&gt;
+    &lt;pdomResult&gt;
+      &lt;address-collection&gt;
+        &lt;address&gt;
+          &lt;quarantineText/&gt;
+        &lt;/address&gt;
+      &lt;/address-collection&gt;
+    &lt;/pdomResult&gt;
+    &lt;ptmNextDate/&gt;
+    &lt;pbHasMore/&gt;
+&lt;/GetQuarantinesResponse&gt;</sample>
+        <dataSourceConfig codepage="1252" colType="2" ignoreConfigCheck="false" textQualifier="none" timezone="_inherit_" useCR="false" useLF="false">
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," ignore="true" label="address" name="." numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@address" name="@address" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="256"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@consecutiveError" name="@consecutiveError" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="long" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@created" name="@created" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@lastModified" name="@lastModified" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateFormat="ymdsoap" dateSep="/" dateTimeSep=" " decimalSep="," label="@lastErrorDate" name="@lastErrorDate" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="datetime" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@quarantineReason" name="@quarantineReason" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@status" name="@status" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="@type" name="@type" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="byte" typeXform="string" width="255"/>
+          <dataSourceColumn allowNullValues="0" colProcessing="0" dateSep="/" dateTimeSep=" " decimalSep="," label="quarantineText" name="quarantineText" numFormat="sepPoint" rejectCol="warning" spaceXform="none" stringXform="none" thousandSep=" " timeSep=":" type="string" typeXform="string" width="255"/>
+          <sampleLines codepage="0">
+            <line id="1557663124">&lt;?xml version='1.0'?&gt;
+&lt;GetQuarantinesResponse&gt;
+    &lt;pdomResult&gt;
+      &lt;address-collection&gt;
+        &lt;address&gt;
+          &lt;quarantineText/&gt;
+        &lt;/address&gt;
+      &lt;/address-collection&gt;
+    &lt;/pdomResult&gt;
+    &lt;ptmNextDate/&gt;
+    &lt;pbHasMore/&gt;
+&lt;/GetQuarantinesResponse&gt;</line>
+          </sampleLines>
+        </dataSourceConfig>
+        <soapInit>if( vars.isFDA &amp;&amp; vars.FDAExtAccountId == 0 )
+  return;
+
+var optionName = 'MC_LastQuarantinesSynch_' + vars.cellId;
+vars.dateCurrentStart = getOption(optionName, false);
+
+if( vars.dateCurrentStart == "null" )
+  vars.dateCurrentStart = "";
+
+document.cnx = new HttpSoapConnection(vars.url + '/nl/jsp/soaprouter.jsp', 'utf-8', 0)
+document.soapSrv = new SoapService(cnx, 'urn:nms:address')
+document.soapSrv.addMethod('GetQuarantines', 'nms:address#GetQuarantines',
+                           ['sessiontoken', 'string','tmStartDate', 'datetime', 'strPointerName', 'string', 'lQuarantineCount', 'long', 'tmCallerDate', 'datetime'],
+                           ['pdomResult', 'NLElement','ptmNextDate', 'datetime','pbHasMore', 'boolean'])
+var tokens = NL.ExecutionInstance.logonRemote(vars.url, vars.login, vars.password);
+document.cnx.addTokens(tokens["sessionToken"], tokens["securityToken"]);</soapInit>
+        <soapCall>if( vars.isFDA &amp;&amp; vars.FDAExtAccountId == 0 )
+  return null;
+var soapResult = document.soapSrv.GetQuarantines("",vars.dateCurrentStart,'',1000,getCurrentDate());
+
+vars.dateCurrentStart = soapResult[1];
+
+if( soapResult[0].*.length()==0 )
+  return null;
+
+return soapResult[0];</soapCall>
+        <soapEnd>if( vars.isFDA &amp;&amp; vars.FDAExtAccountId == 0 )
+  return;
+document.soapSrv.dispose();
+document.cnx.dispose();</soapEnd>
+      </soapImport>
+    </activities>
+    <variables extAccountId="3736" extAccountId-type="number" running="true" running-type="boolean"/>
   </query>
 </query-collection>
