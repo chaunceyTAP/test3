@@ -1,63 +1,4 @@
 <query-collection>
-  <query _cs=" ()" background="xtk:backgrounds/neolane.png" id="1139648110" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient">
-    <activities>
-      <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start2" onError="0" runOnSimulation="true" timezone="_inherit_" x="169" y="92">
-        <transitions>
-          <initial enabled="true" name="initial" target="end22"/>
-        </transitions>
-      </start>
-      <end collision="0" img="xtk:activities/end.png" label="Set running false on restart" mask="0" name="end22" onError="0" runOnSimulation="true" timezone="_inherit_" x="305" y="92">
-        <initScript>instance.vars.running = false;</initScript>
-      </end>
-      <end collision="0" img="xtk:activities/end.png" label="End - Set Complete" mask="0" name="end2" onError="0" runOnSimulation="true" timezone="_inherit_" x="674" y="213">
-        <initScript>instance.vars.running = false;
-var startTime = instance.vars.startTime;
-var endTime = new Date();
-
-
-var seconds = Math.floor((endTime - (startTime))/1000);
-var minutes = Math.floor(seconds/60);
-var hours = Math.floor(minutes/60);
-var days = Math.floor(hours/24);
-
-hours = hours-(days*24);
-minutes = minutes-(days*24*60)-(hours*60);
-seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
-
-
-
-logInfo('Execution complete - Run time: ' + hours + "h:" + minutes + "m:" + seconds + "s");</initScript>
-      </end>
-      <schedule collision="0" img="xtk:activities/clock.png" label="Every 5 mins" mask="0" name="schedule2" onError="0" runOnSimulation="true" timezone="_inherit_" x="170" y="213">
-        <transitions>
-          <transition enabled="true" name="transition" target="lock"/>
-        </transitions>
-        <period>m_abDay='7' m_abDay[0]='0' m_abDay[1]='0' m_abDay[2]='0' m_abDay[3]='0' m_abDay[4]='0' m_abDay[5]='0' m_abDay[6]='0' m_abMonth='12' m_abMonth[0]='0' m_abMonth[10]='0' m_abMonth[11]='0' m_abMonth[1]='0' m_abMonth[2]='0' m_abMonth[3]='0' m_abMonth[4]='0' m_abMonth[5]='0' m_abMonth[6]='0' m_abMonth[7]='0' m_abMonth[8]='0' m_abMonth[9]='0' m_iDayMode='1' m_iMaxIter='0' m_iMonthDay='0' m_iMonthMode='0' m_iPosDay='0' m_iSpanDay='0' m_iSpanWeek='0' m_iTimeMode='3' m_iValidMode='1' m_iWeekDay='0' m_iWeekMode='0' m_tmFixedDay='' m_tmFixedTime='00:00:00.000' m_tmIterDate='' m_tmIterTime='00:00:00.000' m_tmOrgDate='' m_tmSpanTime='5m' m_tmStartDate='0001-11-24' m_tmStartTime='' m_tmStopDate='0001-11-24' m_tmStopTime='' m_vtmTime='0'</period>
-      </schedule>
-      <wait collision="0" delay="360" img="xtk:activities/hourglass.png" label="Wait 6m" mask="0" name="wait" onError="0" runOnSimulation="true" timezone="_inherit_" x="506" y="213">
-        <transitions>
-          <transition enabled="true" name="transition" target="end2"/>
-        </transitions>
-      </wait>
-      <jsx collision="0" img="xtk:activities/script.png" label="One execution at a time" mask="0" name="lock" onError="0" timezone="_inherit_" x="306" y="213">
-        <transitions>
-          <transition enabled="true" label="Nothing running" name="notRunning" target="wait"/>
-          <error enabled="false" label="Error" name="error"/>
-        </transitions>
-        <call>if (instance.vars.running != true){
-  instance.vars.running = true;
-  instance.vars.startTime = new Date();
-  task.postEvent(task.transitionByName("notRunning"));
-  logInfo('No other instance running - Running now')
-} else {
-  logWarning('Other Instance still running - Waiting for it to complete');
-}
-task.setCompleted();
-return 0;</call>
-        <recall>return 0;</recall>
-      </jsx>
-    </activities>
-  </query>
   <query _cs=" ()" background="xtk:backgrounds/neolane.png" id="2107608" modelName="WKF18" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient">
     <activities>
       <deliveryEmail actionType="1" collision="0" contentType="0" deliverySel="1" form="deliveryOperation" img="nms:activities/email.png" label="Email delivery" mask="0" messageType="0" name="deliveryEmail" offerSel="0" onError="0" targetSel="1" timezone="_inherit_" x="203" xpathEditTarget="delivery" y="107">
@@ -87,220 +28,6 @@ return 0;</call>
         </readGroup>
       </readGroup>
     </activities>
-  </query>
-  <query _cs=" ()" background="xtk:backgrounds/neolane.png" errorActivity="query" errorCount="0" eventCount="352" id="1227406333" modelName="newWorkflow" queryRestart="false" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient" simulation="false" taskCount="395">
-    <activities>
-      <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start" onError="0" runOnSimulation="true" timezone="_inherit_" x="16" y="80">
-        <transitions>
-          <initial enabled="true" name="initial" target="query" x="0" y="0"/>
-        </transitions>
-      </start>
-      <js collision="0" img="xtk:activities/script.png" label="JavaScript code" mask="0" name="js" onError="0" timezone="_inherit_" x="384" y="80">
-        <transitions>
-          <done enabled="true" label="Ok" name="done"/>
-          <error enabled="false" label="Error" name="error"/>
-        </transitions>
-        <script>loadLibrary("xtk:common.js");
-    loadLibrary("xtk:shared/json2.js");
-   
-    
-    
-    
-  
-    
-    function getBranches(){
-  
-
-
-         var req = new HttpClientRequest('https://api.github.com/repos/chaunceyTAP/test3/git/refs/heads/main');
-  
-          req.method = 'GET';
-      
-          req.header["User-Agent"] = "chaunceyTAP";
-          req.header["Accept"] = "application/vnd.github+json";
-          req.header["Content-Type"] = "application/json";
-          req.header["X-GitHub-Api-Version"] = "2022-11-28";
-          req.header["X-OAuth-Scopes"] = "repo, user";
-          req.header["X-Accepted-OAuth-Scopes"] = "repo";
-          req.header["Authorization"] = "Bearer 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";
-          
-          req.execute();
-          
-          var response = req.response;
-       
-          var body = response.body; 
-         // logInfo(typeof(body));
-          var bodyAsJson = JSON.parse(body);
-         
-          
-          var baseTreeSha = bodyAsJson.object.sha
-          
-          //logInfo(baseTreeSha);
-  
-      function viewCommit(baseTreeSha){
-        
-            var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/commits/' + baseTreeSha
-            var req = new HttpClientRequest(URL);
-            
-            req.method = 'GET';
-            
-            req.header["User-Agent"] = "chaunceyTAP";
-            req.header["Accept"] = "application/vnd.github+json";
-            req.header["Content-Type"] = "application/json";
-            req.header["X-GitHub-Api-Version"] = "2022-11-28";
-            req.header["X-OAuth-Scopes"] = "repo, user";
-            req.header["X-Accepted-OAuth-Scopes"] = "repo";
-            req.header["Authorization"] = "Bearer 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";
-            
-            req.execute();
-            
-            var response = req.response;
-          
-            var body = response.body; 
-            var bodyAsJson = JSON.parse(body);
-            
-            var treeSha = bodyAsJson.tree.sha;
-            
-            //document.write(treeSha);
-            logInfo("THis is the base tree:  " + baseTreeSha);
-            logInfo("This is the commit tree :  " + treeSha);
-            function createTree(baseTreeSha, treeSha){
-            
-                                function getData(){
-                                  var query = xtk.queryDef.create(
-                                    &lt;queryDef schema="temp:query" operation="select"&gt;
-                                      &lt;select&gt;
-                                        &lt;node expr="@id" /&gt;
-                                        &lt;node expr="data" /&gt;
-                                      &lt;/select&gt;
-                                    &lt;/queryDef&gt;
-                                    );
-                                    var result = query.ExecuteQuery();
-                                    var newResult = result.toXMLString()
-                                    //document.write('this is the new result :   ' + result);
-                                    //logInfo('this is the new result :   ' + result.toXMLString());
-                                    return newResult;
-                                }
-                                                    
-                                
-              var newResult = getData();
-              var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/trees'
-              var req = new HttpClientRequest(URL);
-              
-              req.method = 'POST';
-              
-              req.header["User-Agent"] = "chaunceyTAP";
-              req.header["Accept"] = "application/vnd.github+json";
-              req.header["Content-Type"] = "application/json";
-              req.header["X-GitHub-Api-Version"] = "2022-11-28";
-              req.header["X-OAuth-Scopes"] = "repo, user";
-              req.header["X-Accepted-OAuth-Scopes"] = "repo";
-              req.header["Authorization"] = "Bearer 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";
-              req.body = JSON.stringify({"owner":"chaunceyTap","repo":"test3","base_tree":baseTreeSha,"tree": [{"path": "allWorkflows.txt","mode": "100644","type": "blob","content": newResult}]});
-    logInfo(req.body);
-              
-             
-              req.execute();
-              
-              var response = req.response;
-              
-              var body = response.body; 
-              var bodyAsJson = JSON.parse(body);
-              logInfo(body);
-              
-              var newTreeSha = bodyAsJson.sha
-              logInfo("This is the new tree sha:   " + newTreeSha);
-              //logInfo(newResult);
-              function commitToTree(newTreeSha, baseTreeSha){
-                    var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/commits'
-                    var req = new HttpClientRequest(URL);
-                    
-                    req.method = 'POST';
-                    
-                    req.header["User-Agent"] = "chaunceyTAP";
-                    req.header["Accept"] = "application/vnd.github+json";
-                    req.header["Content-Type"] = "application/json";
-                    req.header["X-GitHub-Api-Version"] = "2022-11-28";
-                    req.header["X-OAuth-Scopes"] = "repo, user";
-                    req.header["X-Accepted-OAuth-Scopes"] = "repo";
-                    req.header["Authorization"] = "Bearer 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";
-                    
-                    req.body = JSON.stringify({"parents": [baseTreeSha],"tree": newTreeSha,"message": "Recurring commit from Adobe Campaign Classic"})
-
-                    
-                    
-                    
-                    req.execute();
-                    
-                    var response = req.response;
-                    
-                    var body = response.body; 
-                    var bodyAsJson = JSON.parse(body);
-                    
-                    
-                    var newShaCommit = bodyAsJson.sha
-                    
-                                  function pushToRepo(newShaCommit){
-                                    var URL = 'https://api.github.com/repos/chaunceyTAP/test3/git/refs/heads/main'
-                                    var req = new HttpClientRequest(URL);
-                    
-                                    req.method = 'POST';
-                                    
-                                    req.header["User-Agent"] = "chaunceyTAP";
-                                    req.header["Accept"] = "application/vnd.github+json";
-                                    req.header["Content-Type"] = "application/json";
-                                    req.header["X-GitHub-Api-Version"] = "2022-11-28";
-                                    req.header["X-OAuth-Scopes"] = "repo, user";
-                                    req.header["X-Accepted-OAuth-Scopes"] = "repo";
-                                    req.header["Authorization"] = "Bearer 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";
-                                    
-                                    
-                                    req.body = JSON.stringify({"sha": newShaCommit ,"force":true})
-                                    
-                                    req.execute();
-                                    
-                                    var body = response.body; 
-                                    var bodyAsJson = JSON.parse(body);
-                                    
-                                    document.write(body);
-                                    logInfo(body);
-                                    
-                                    
-                                  }
-                    
-                    
-                    pushToRepo(newShaCommit);
-              }
-              commitToTree(newTreeSha, baseTreeSha);
-              
-            }
-            createTree(baseTreeSha,treeSha);
-        
-        }
-        viewCommit(baseTreeSha);
-        
-     }
-    
-
-getBranches();</script>
-      </js>
-      <query collision="0" distinct="true" img="nms:activities/query.png" keepAllExtraData="false" label="lowercase value of label contains 'gh' or lowercase value of label contains 'cut'" mask="0" name="query" noAutoPk="false" noAutoPkFilter="false" onError="0" recipientLink="" runOnSimulation="true" schema="xtk:workflow" timezone="_inherit_" useSource="0" x="192" y="72">
-        <errors/>
-        <transitions>
-          <result enabled="true" label="Result" name="result" target="js"/>
-        </transitions>
-        <select>
-          <node analyze="false" expr="data" label="XML memo"/>
-          <node analyze="false" expr="@id" label="Primary key"/>
-        </select>
-        <where displayFilter="lowercase value of label contains 'gh' or lowercase value of label contains 'cut'" filterName="backGroundFilterFrm" id="1363214386">
-          <condition boolOperator="OR" compositeKey="" dependkey="" enabledIf="" expr="Lower(@label) LIKE '%' + 'gh' + '%'" internalId="1356660782"/>
-          <condition compositeKey="" dependkey="" enabledIf="" expr="Lower(@label) LIKE '%' + 'cut' + '%'" internalId="1358233648"/>
-        </where>
-        <humanCond>Query: lowercase value of label contains 'gh' or lowercase value of label contains 'cut'</humanCond>
-      </query>
-    </activities>
-    <variables/>
   </query>
   <query _cs=" ()" background="xtk:backgrounds/neolane.png" errorActivity="delivery" errorCount="0" eventCount="65" id="1207187533" keepResult="true" modelName="newWorkflow" queryRestart="false" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="cha:chaunceysTest" simulation="false" taskCount="88">
     <activities>
@@ -2797,5 +2524,64 @@ document.cnx.dispose();</soapEnd>
       </soapImport>
     </activities>
     <variables extAccountId="3736" extAccountId-type="number" running="true" running-type="boolean"/>
+  </query>
+  <query _cs=" ()" background="xtk:backgrounds/neolane.png" id="1139648110" scenario-cs="Notification of the workflow supervisor (notifySupervisor)" scenario-id="3451" schema="nms:recipient">
+    <activities>
+      <start collision="0" img="xtk:activities/start.png" label="Start" mask="0" name="start2" onError="0" runOnSimulation="true" timezone="_inherit_" x="169" y="92">
+        <transitions>
+          <initial enabled="true" name="initial" target="end22"/>
+        </transitions>
+      </start>
+      <end collision="0" img="xtk:activities/end.png" label="Set running false on restart" mask="0" name="end22" onError="0" runOnSimulation="true" timezone="_inherit_" x="305" y="92">
+        <initScript>instance.vars.running = false;</initScript>
+      </end>
+      <end collision="0" img="xtk:activities/end.png" label="End - Set Complete" mask="0" name="end2" onError="0" runOnSimulation="true" timezone="_inherit_" x="674" y="213">
+        <initScript>instance.vars.running = false;
+var startTime = instance.vars.startTime;
+var endTime = new Date();
+
+
+var seconds = Math.floor((endTime - (startTime))/1000);
+var minutes = Math.floor(seconds/60);
+var hours = Math.floor(minutes/60);
+var days = Math.floor(hours/24);
+
+hours = hours-(days*24);
+minutes = minutes-(days*24*60)-(hours*60);
+seconds = seconds-(days*24*60*60)-(hours*60*60)-(minutes*60);
+
+
+
+logInfo('Execution complete - Run time: ' + hours + "h:" + minutes + "m:" + seconds + "s");</initScript>
+      </end>
+      <schedule collision="0" img="xtk:activities/clock.png" label="Every 5 mins" mask="0" name="schedule2" onError="0" runOnSimulation="true" timezone="_inherit_" x="170" y="213">
+        <transitions>
+          <transition enabled="true" name="transition" target="lock"/>
+        </transitions>
+        <period>m_abDay='7' m_abDay[0]='0' m_abDay[1]='0' m_abDay[2]='0' m_abDay[3]='0' m_abDay[4]='0' m_abDay[5]='0' m_abDay[6]='0' m_abMonth='12' m_abMonth[0]='0' m_abMonth[10]='0' m_abMonth[11]='0' m_abMonth[1]='0' m_abMonth[2]='0' m_abMonth[3]='0' m_abMonth[4]='0' m_abMonth[5]='0' m_abMonth[6]='0' m_abMonth[7]='0' m_abMonth[8]='0' m_abMonth[9]='0' m_iDayMode='1' m_iMaxIter='0' m_iMonthDay='0' m_iMonthMode='0' m_iPosDay='0' m_iSpanDay='0' m_iSpanWeek='0' m_iTimeMode='3' m_iValidMode='1' m_iWeekDay='0' m_iWeekMode='0' m_tmFixedDay='' m_tmFixedTime='00:00:00.000' m_tmIterDate='' m_tmIterTime='00:00:00.000' m_tmOrgDate='' m_tmSpanTime='5m' m_tmStartDate='0001-11-24' m_tmStartTime='' m_tmStopDate='0001-11-24' m_tmStopTime='' m_vtmTime='0'</period>
+      </schedule>
+      <wait collision="0" delay="360" img="xtk:activities/hourglass.png" label="Wait 6m" mask="0" name="wait" onError="0" runOnSimulation="true" timezone="_inherit_" x="506" y="213">
+        <transitions>
+          <transition enabled="true" name="transition" target="end2"/>
+        </transitions>
+      </wait>
+      <jsx collision="0" img="xtk:activities/script.png" label="One execution at a time" mask="0" name="lock" onError="0" timezone="_inherit_" x="306" y="213">
+        <transitions>
+          <transition enabled="true" label="Nothing running" name="notRunning" target="wait"/>
+          <error enabled="false" label="Error" name="error"/>
+        </transitions>
+        <call>if (instance.vars.running != true){
+  instance.vars.running = true;
+  instance.vars.startTime = new Date();
+  task.postEvent(task.transitionByName("notRunning"));
+  logInfo('No other instance running - Running now')
+} else {
+  logWarning('Other Instance still running - Waiting for it to complete');
+}
+task.setCompleted();
+return 0;</call>
+        <recall>return 0;</recall>
+      </jsx>
+    </activities>
   </query>
 </query-collection>
