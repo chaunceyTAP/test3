@@ -1,0 +1,184 @@
+<jssp-collection>
+  <jssp _cs="AuditAlertsApi.jssp (tap)" created="2019-08-18 09:43:20.882Z" createdBy-id="1133965323" entitySchema="xtk:jssp" img="xtk:javascript.png" label="AuditAlertsApi.jssp" lastModified="2021-05-20 14:11:36.360Z" md5="B878CA4CCA8CBF1E9F7CB35AD27C6813" modifiedBy-id="1174945483" name="AuditAlertsApi.jssp" namespace="tap" xtkschema="xtk:jssp">
+    <data>&lt;%@ page import="/nl/core/shared/nl.js"%&gt;&lt;%
+
+NL.server().reset().require("/nl/core/api.js")
+  .require('/nl/core/queryDef.js')
+  .require('/nl/core/jsspcontext.js');
+
+NL.API.init(request, response, {
+  authentication: true,
+  jsonOutput: true
+}, function (jsspContext) {
+
+  /* Authentication */
+  var context = logonEscalation("webapp");
+  loadLibrary('tap:AuditAlerts.js');
+
+  var type = request.getParameter('type');
+  var alertId = request.getParameter('id');
+
+  if (!type) {
+    response.sendError(400, "Missing parameter 'type'.");
+    return;
+  }
+
+
+  var results;
+
+  if (type == 'alerts') {
+    results = { summary: { ok: 0, warning: 0, failed: 0 }, alerts: [] }
+
+
+//Get Dashboard Audits
+var auditAlerts = xtk.queryDef.create(
+  &lt;queryDef schema="tap:AuditAlerts" operation="select"&gt;
+    &lt;select&gt;
+      &lt;node expr="@id" /&gt;
+      &lt;node expr="@label" /&gt;
+      &lt;node expr="@saveResults" /&gt;
+      &lt;node alias="AuditHistory" expr="AuditHistory" noComputeString="1"&gt;
+        &lt;node expr="@status" analyze="true" /&gt;
+        &lt;node expr="@message" /&gt;
+        &lt;node expr="@count" /&gt;
+      &lt;/node&gt;
+    &lt;/select&gt;
+    &lt;where&gt;
+      &lt;condition expr="@enabled = 1" /&gt;
+    &lt;/where&gt;
+    &lt;conditionLink alias="AuditHistory" groupBy="0" id="2034434534" label="Audit History"
+      lineCount="1" schema="tap:AuditHistory" singleRow="0" xpath="AuditHistory"&gt;
+      &lt;orderBy&gt;
+        &lt;node expr="@eventDate" label="Event Date" sortDesc="1" /&gt;
+      &lt;/orderBy&gt;
+      &lt;where /&gt;
+      &lt;select /&gt;
+    &lt;/conditionLink&gt;
+    &lt;orderBy&gt;
+      &lt;node expr="@label" sortDesc="false" /&gt;
+    &lt;/orderBy&gt;
+  &lt;/queryDef&gt;).ExecuteQuery();
+  
+
+for each(var alert in auditAlerts) {
+  if (alert.AuditHistory.@status == 2) {
+    results.summary.ok += 1;
+  } else if (alert.AuditHistory.@status == 1) {
+    results.summary.warning += 1;
+  } else if (alert.AuditHistory.@status == 0) {
+    results.summary.failed += 1;
+  }
+
+  results.alerts.push({ 
+      id: parseInt(alert.@id), 
+      status: alert.AuditHistory.@statusName.toString(), 
+      label: alert.@label.toString(), 
+      count: parseInt(alert.AuditHistory.@count)
+  });
+}
+
+} else if (type == 'results') {
+  if (!alertId || alertId == 0 || alertId == undefined) {
+    response.sendError(400, "Missing parameter 'id'.");
+    return;
+  }
+
+   results = {columns:[], results:[], summary:{}, test:[]};
+
+  var auditAlert = xtk.queryDef.create(
+    &lt;queryDef schema="tap:AuditAlerts" operation="get"&gt;
+      &lt;select&gt;
+        &lt;node expr="@id" /&gt;
+        &lt;node expr="@label" /&gt;
+        &lt;node expr="@internalName" /&gt;
+        &lt;node expr="@desc"/&gt; 
+        &lt;node expr="@lastProcessingDate" /&gt;
+        &lt;node expr="@nextProcessingDate" /&gt;
+        &lt;node expr="[filter/select/node]"&gt;
+          &lt;node expr="@hidden" /&gt;
+          &lt;node expr="@analyze" /&gt;
+          &lt;node expr="@alias" /&gt;
+          &lt;node expr="@expr" /&gt;
+          &lt;node expr="@label" /&gt;
+        &lt;/node&gt;
+      &lt;/select&gt;
+      &lt;where&gt;
+        &lt;condition expr={"@id = " + alertId} /&gt;
+      &lt;/where&gt;
+    &lt;/queryDef&gt;).ExecuteQuery();
+
+    results.summary.lastProcessingDate = formatDate(auditAlert.@lastProcessingDate, "%2D/%2M/%2Y %02I:%02N %P");
+    results.summary.nextProcessingDate = formatDate(auditAlert.@nextProcessingDate, "%2D/%2M/%2Y %02I:%02N %P");
+    results.summary.label = auditAlert.@label.toString();
+    results.summary.desc = auditAlert.@desc.toString();
+
+
+  //normalise select nodes
+  for each(var node in auditAlert.filter.select.node) {
+    if (node.@alias == undefined || node.@alias == "") {
+      node.@alias = node.@expr;
+    }
+    if (node.@hidden == undefined || node.@hidden == "") {
+      node.@hidden = 0;
+    }
+    node.@fieldIndex = node.@alias.toString().substring(1);
+    if (node.@analyze == 1) {
+      node.@fieldIndex += 'Label'
+    }
+  }
+
+  var colHeaders = [];
+  for each (var header in auditAlert.filter.select.node) {  
+    if (header.@hidden == 0) {    
+      results.columns.push({title:header.@label.toString()});
+      colHeaders.push(header.@fieldIndex.toString())
+    }        
+  }
+
+  //Get Audit Results  
+  var auditResults = xtk.queryDef.create(
+    &lt;queryDef schema="tap:AuditResults" operation="select"&gt;
+      &lt;select&gt;
+        &lt;node expr="@id" /&gt;
+        &lt;node expr="@label" /&gt;
+        &lt;node expr="resultData" type="any" /&gt;
+      &lt;/select&gt;
+      &lt;where&gt;
+        &lt;condition expr={"[@auditAlert-id] = " + alertId }/&gt;
+      &lt;/where&gt;
+    &lt;/queryDef&gt;).ExecuteQuery();
+
+  //Format for dashboard
+  for each(var res in auditResults) {
+    if (res.resultData) {
+      var tmpData = new XML(res.resultData.toString()); 
+      var tmpRes = [];
+      for each (var header in colHeaders) {         
+       tmpRes.push( formatValueDisplay(header, tmpData.@[header].toString(), auditAlert.@internalName.toString()))   
+      }  
+      results.results.push(tmpRes)  ;
+    }
+  }
+
+}
+
+/* Execute Query */
+try {
+
+  document.write(JSON.stringify(results));
+} catch (e) {
+  throw e;
+} finally {
+  /* Restore Context */
+  logonWithContext(context);
+}
+
+
+
+   
+  });                     
+  
+                                             
+%&gt;</data>
+  </jssp>
+</jssp-collection>
