@@ -1,2 +1,113 @@
 <?xml version='1.0'?>
-<specFile-collection/>
+<specFile-collection>
+  <specFile _cs="TAP : Audit Alerts v3.1 (tap)" created="2019-08-05 09:05:32.988Z"
+            createdBy-id="1133965323" entitySchema="xtk:specFile" img="xtk:installedPackage.png"
+            includeDefaultValues="false" includeInstallScript="false" includeSpec="true"
+            label="TAP : Audit Alerts v3.1" lastModified="2022-11-22 17:10:27.175Z"
+            md5="51221DFE4AB819120ACC0DDF07470F5B" modifiedBy-id="1206588703" name="auditAlertsV3"
+            namespace="tap" type="0" vendor="TAP London">
+    <desc/>
+    <definition automaticDefinition="false" id="xtk:javascript,vendor,moment" lineCountMax="5000"
+                schema="xtk:javascript">
+      <where displayFilter="vendor:moment">
+        <condition expr="@namespace='vendor'" internalId="1"/>
+        <condition expr="@name='moment'" internalId="2"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:image,tap,tapfavicon.png" lineCountMax="5000"
+                schema="xtk:image">
+      <where displayFilter="tap:tapfavicon.png">
+        <condition expr="@namespace='tap'" internalId="3328392580"/>
+        <condition expr="@name='tapfavicon.png'" internalId="3328392581"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:javascript,tap,AuditAlerts.js"
+                lineCountMax="5000" schema="xtk:javascript">
+      <where displayFilter="tap:AuditAlerts.js">
+        <condition expr="@namespace='tap'" internalId="3328392582"/>
+        <condition expr="@name='AuditAlerts.js'" internalId="3328392583"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:srcSchema,tap,AuditAlerts" lineCountMax="5000"
+                schema="xtk:srcSchema">
+      <where displayFilter="tap:AuditAlerts">
+        <condition expr="@namespace='tap'" internalId="3328392584"/>
+        <condition expr="@name='AuditAlerts'" internalId="3328392585"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:srcSchema,tap,AuditHistory" lineCountMax="5000"
+                schema="xtk:srcSchema">
+      <where displayFilter="tap:AuditHistory">
+        <condition expr="@namespace='tap'" internalId="3328392586"/>
+        <condition expr="@name='AuditHistory'" internalId="3328392587"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:srcSchema,tap,AuditResults" lineCountMax="5000"
+                schema="xtk:srcSchema">
+      <where displayFilter="tap:AuditResults">
+        <condition expr="@namespace='tap'" internalId="1"/>
+        <condition expr="@name='AuditResults'" internalId="2"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:queryFilter,tapAuditAlerts" lineCountMax="5000"
+                schema="xtk:queryFilter">
+      <where displayFilter="tapAuditAlerts">
+        <condition expr="@name='tapAuditAlerts'" internalId="3328392588"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:form,tap,AuditResults" lineCountMax="5000"
+                schema="xtk:form">
+      <where displayFilter="tap:AuditResults">
+        <condition expr="@namespace='tap'" internalId="1"/>
+        <condition expr="@name='AuditResults'" internalId="2"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:form,tap,AuditAlerts" lineCountMax="5000"
+                schema="xtk:form">
+      <where displayFilter="tap:AuditAlerts">
+        <condition expr="@namespace='tap'" internalId="3328392589"/>
+        <condition expr="@name='AuditAlerts'" internalId="3328392590"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:navtree,tap,AuditAlerts" lineCountMax="5000"
+                schema="xtk:navtree">
+      <where displayFilter="tap:AuditAlerts">
+        <condition expr="@namespace='tap'" internalId="3328392591"/>
+        <condition expr="@name='AuditAlerts'" internalId="3328392592"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="1882259665" lineCountMax="5000" schema="xtk:folder">
+      <where displayFilter="internal name equal to 'tapLondonSupport' or internal name equal to 'tapModuleResources' or internal name equal to 'tapModuleWorkflows' or internal name equal to 'tapModuleWebApps' or internal name equal to 'tapAuditAlerts'">
+        <condition boolOperator="OR" compositeKey="" dependkey="" enabledIf="" expr="@name = 'tapLondonSupport'"
+                   internalId="3328392593"/>
+        <condition boolOperator="OR" compositeKey="" dependkey="" enabledIf="" expr="@name = 'tapModuleResources'"
+                   internalId="3328392594"/>
+        <condition boolOperator="OR" compositeKey="" dependkey="" enabledIf="" expr="@name = 'tapModuleWorkflows'"
+                   internalId="3328392595"/>
+        <condition boolOperator="OR" compositeKey="" dependkey="" enabledIf="" expr="@name = 'tapModuleWebApps'"
+                   internalId="3328392596"/>
+        <condition compositeKey="" dependkey="" enabledIf="" expr="@name = 'tapAuditAlerts'"
+                   internalId="3328392597"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:workflow,tapAuditAlertsProcessing"
+                lineCountMax="5000" schema="xtk:workflow">
+      <where displayFilter="internal name equal to 'tapAuditAlertsReportGeneration' or internal name equal to 'tapAuditAlertsEmailAlerting'">
+        <condition boolOperator="OR" expr="@internalName = 'tapAuditAlertsReportGeneration'"
+                   internalId="3328392599"/>
+        <condition compositeKey="" dependkey="" enabledIf="" expr="@internalName = 'tapAuditAlertsEmailAlerting'"
+                   internalId="3328392600"/>
+      </where>
+    </definition>
+    <definition automaticDefinition="false" id="xtk:counter,tapAuditAlerts" lineCountMax="5000"
+                schema="xtk:counter">
+      <where displayFilter="tapAuditAlerts">
+        <condition expr="@name='tapAuditAlerts'" internalId="3328392601"/>
+      </where>
+    </definition>
+    <installScript/>
+    <execution buildDate="2022-11-22 17:10:26.926Z" fileName="package_tap_auditAlertsV3.xml"
+               filePath="/usr/local/neolane/nl6/var/partners/upload/" fileSize="136716"
+               objectCount="18"/>
+  </specFile>
+</specFile-collection>
